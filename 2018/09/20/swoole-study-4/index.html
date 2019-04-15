@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="SWOOLE," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="转载原文 前言上回我们简单介绍了一下TCP Server的工作方式以及如何用Swoole实现一个简单的TCP Server，这次我们来聊聊信息流动中，非常重要基石之一——协议（PROTOCOL）。">
+<meta name="keywords" content="SWOOLE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="当SWOOLE遇上PROTOCOL">
+<meta property="og:url" content="http://yoursite.com/2018/09/20/swoole-study-4/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="转载原文 前言上回我们简单介绍了一下TCP Server的工作方式以及如何用Swoole实现一个简单的TCP Server，这次我们来聊聊信息流动中，非常重要基石之一——协议（PROTOCOL）。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-12T09:23:24.484Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="当SWOOLE遇上PROTOCOL">
+<meta name="twitter:description" content="转载原文 前言上回我们简单介绍了一下TCP Server的工作方式以及如何用Swoole实现一个简单的TCP Server，这次我们来聊聊信息流动中，非常重要基石之一——协议（PROTOCOL）。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/20/swoole-study-4/"/>
+
+
+
+
+
+  <title>当SWOOLE遇上PROTOCOL | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/20/swoole-study-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">当SWOOLE遇上PROTOCOL</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-20T05:22:12-04:00">
+                2018-09-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://github.com/szyhf/swoole_study/blob/master/%E5%BD%93SWOOLE%E9%81%87%E4%B8%8APROTOCOL.md" target="_blank" rel="noopener">转载原文</a></p>
+<h4 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h4><p>上回我们简单介绍了一下TCP Server的工作方式以及如何用Swoole实现一个简单的TCP Server，这次我们来聊聊信息流动中，非常重要基石之一——协议（PROTOCOL）。<br><a id="more"></a></p>
+<h4 id="协议，通信的基石"><a href="#协议，通信的基石" class="headerlink" title="协议，通信的基石"></a>协议，通信的基石</h4><p>通信的双方约定一种理解的规则，以便对理解对方想表达的信息，这种解析信息的规则，就是今天的主题，协议。</p>
+<blockquote>
+<p>在语文上，我们用的是标点符号；数学上，我们有各种的加减乘除……</p>
+</blockquote>
+<h4 id="从HTTP到TCP，从应用层回到传输层"><a href="#从HTTP到TCP，从应用层回到传输层" class="headerlink" title="从HTTP到TCP，从应用层回到传输层"></a>从HTTP到TCP，从应用层回到传输层</h4><p>相信TCP协议（Transmission Control Protocol）应该是想学习SWOOLE的童鞋最容易遇到的拦路虎之一，因为一般我们使用PHP做网站开发的时候，并不需要处理涉及TCP协议的东西，只要了解一部分HTTP协议（HyperText Transfer Protocol）就可以做很多事情。</p>
+<blockquote>
+<p>甚至只是知道Get和Post就可以了，更细致的工作，巨人们已经帮我们完成了。</p>
+</blockquote>
+<p>在故事继续之前，请允许我先简单引入一下传说中的4层协议，TCP就是传输层的协议，而HTTP是应用层，这两个协议有什么关系呢？我们做个有趣的实验看看：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">$server = new \swoole_server(&quot;127.0.0.1&quot;,8088,SWOOLE_PROCESS,SWOOLE_SOCK_TCP);</span><br><span class="line"></span><br><span class="line">$server-&gt;on(&apos;connect&apos;, function ($serv, $fd)</span><br><span class="line">&#123;</span><br><span class="line">  </span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">$server-&gt;on(&apos;receive&apos;, function ($serv, $fd, $from_id, $data)</span><br><span class="line">&#123;</span><br><span class="line">    // 这次，我们只需要简单的把收到的数据打印出来即可</span><br><span class="line">    // 但是，我们会在一头一尾各打印一行邪恶的分隔线</span><br><span class="line">    // 以便清楚的划分收到的数据内容</span><br><span class="line">    </span><br><span class="line">    echo &quot;====================邪恶的开头分隔线====================&quot;.PHP_EOL;</span><br><span class="line">    echo $data;//打印收到的数据正文</span><br><span class="line">    echo &quot;====================邪恶的结尾分隔线====================&quot;.PHP_EOL;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$server-&gt;on(&apos;close&apos;, function ($serv, $fd)</span><br><span class="line">&#123;</span><br><span class="line">    echo &quot;client: close.\n&quot;;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">$server -&gt; start();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>远程主机\IP\端口的问题，本文就掠过啦，有需要看本系列的前作。</p>
+</blockquote>
+<p>好，我们之前是通过telnet，实现与SWOOLE的TCP Server之间的简单通信的，这次我们玩点不一样的，首先仍然是启动SWOOLE Server，然后，打开浏览器，没错，在地址栏中输入：“<a href="http://127.0.0.1:8088”" target="_blank" rel="noopener">http://127.0.0.1:8088”</a> ————</p>
+<blockquote>
+<p>喂，我运行的是TCP Server，开浏览器干什么啦？</p>
+</blockquote>
+<p>显然，浏览器什么都没有输出，又或者爆出一个错误，但这个时候返回我们的终端看看：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt; php swoole_server_demo.php</span><br><span class="line">====================邪恶的开头分隔线====================</span><br><span class="line">GET / HTTP/1.1</span><br><span class="line">Host: 127.0.0.1:8088</span><br><span class="line">Connection: keep-alive</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/250.36 (KHTML, like Gecko) Chrome/52.0.2743.250 Safari/250.36</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</span><br><span class="line">Accept-Encoding: gzip, deflate, sdch</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.8</span><br><span class="line"></span><br><span class="line">====================邪恶的结尾分隔线====================</span><br></pre></td></tr></table></figure>
+<p>没错，虽然我们运行的是TCP Server，虽然我们是使用浏览器，而不是telnet访问的，我们的Server仍然打印出了显然非常有规律的信息，相信很多童鞋已经发现了，我们使用Chrome开发网页时，经常使用的调试工具箱里，就会在Network工具中的Header中看到类似的东西。</p>
+<blockquote>
+<p>这就是根据HTTP协议编写的一段信息。</p>
+</blockquote>
+<p>而编写者是谁呢？没错，就是我们一直默默无闻而几乎是互联网改变世界的基石之一，浏览器，每当我们通过浏览器访问不同的网站时，浏览器都会默默生成类似的文本作为WebRequest的正文，提交给对应的服务端。</p>
+<blockquote>
+<p>有兴趣的童鞋，可以试试使用附带Get请求、Post请求等方式访问，看看Server端收到的文本所有什么不同</p>
+</blockquote>
+<p>木有错，这就是超文本传输协议的本体，也是为什么叫超文本的原因，它是通过特定格式的字符串完成请求的描述的，在《当SWOOLE遇上SERVER》一文中，我曾经提到Apache收到客户端请求以后，经过一定的解析，再由Zend调用PHP脚本执行业务工作并完成输出；这里提到的请求就是这个。</p>
+<blockquote>
+<p>当然，浏览器上经常遇到协议还有HTTPS，这里先按下不表。</p>
+</blockquote>
+<p>完整的HTTP协议非常复杂，笔者这里就不详细叙述了，但HTTP协议有一个基本规则，各个字段之间，是通过“\r\n”进行分割的，简单说，当我们收到一个“完整的”HTTP请求的时候，可以用explode方法快速的划分区段，然后再根据区段进行解析，就能知道用户请求的是什么了。</p>
+<blockquote>
+<p>看格式其实或多或少都能猜到写了什么</p>
+</blockquote>
+<p>知道用户请求的是什么，我们就可以选择性的输出用户想要的东西，例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$server-&gt;on(&apos;receive&apos;, function ($serv, $fd, $from_id, $data)</span><br><span class="line">&#123;</span><br><span class="line">    $reqAry = explode(&quot;\r\n&quot;,$data);</span><br><span class="line">    </span><br><span class="line">    if (stripos($reqAry[0],&quot;Hello.php&quot;) !== FALSE )</span><br><span class="line">    &#123;</span><br><span class="line">        echo &quot;用户想调用Hello.php&quot;.PHP_EOL;</span><br><span class="line">        $serv-&gt;send($fd,&quot;你调用了Hello.php方法&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    else if (stripos($reqAry[0],&quot;World.php&quot;) !== FALSE )</span><br><span class="line">    &#123;</span><br><span class="line">        echo &quot;用户想调用World.php&quot;.PHP_EOL;</span><br><span class="line">        $serv-&gt;send($fd,&quot;你调用了World.php方法&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        echo &quot;用户想请求了一个不支持的方法&quot;.PHP_EOL;</span><br><span class="line">        $serv-&gt;send($fd,&quot;404，你调用的方法我们不支持。&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们修改一下receive的回调，对收到的数据使用“\r\n”进行分割，然后对第0个元素进行简单的判断处理，然后，在浏览器中分别访问：<a href="http://127.0.0.1:8088/Hello.php、http://127.0.0.1:8088/World.php、http://127.0.0.1:8088/Index.php，看看Shell中的输出：" target="_blank" rel="noopener">http://127.0.0.1:8088/Hello.php、http://127.0.0.1:8088/World.php、http://127.0.0.1:8088/Index.php，看看Shell中的输出：</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; php swoole_server_demo.php</span><br><span class="line">用户想调用Hello.php</span><br><span class="line">用户想调用World.php</span><br><span class="line">用户想请求了一个不支持的方法</span><br></pre></td></tr></table></figure>
+<p>然后我们会发现浏览器分别打印了我们在分支语句中send回来的内容，就像平时调用了echo一样。</p>
+<blockquote>
+<p>严格来说，这样写，不一定能输出出来，因为HTTP协议对返回值的格式也有约定。</p>
+</blockquote>
+<p>如果我们对这个方法做的更完善一些，例如根据请求名，反射出Controller实例，并执行Controller的某个Method，整个过程几乎就跟我们常见的MVC框架一样了。</p>
+<blockquote>
+<p>事实上，在笔者看来，C中执行的业务逻辑，可以看作是”业务层”协议了</p>
+</blockquote>
+<p>无论是根据“\r\n”分段也好，根据“ ”拆分每段内部的字段也好，这些规则，都是协议本身的一部分。</p>
+<blockquote>
+<p>一般网络小说中，掌握了规则的强者总是开始努力打破规则，乃至定制自己的规则（所谓我的领域做主）</p>
+</blockquote>
+<p>HTTP的规则简单介绍的这里，我们回到一开始的问题，为什么我运行了一个TCP Server，却能实现HTTP的内容？</p>
+<blockquote>
+<p>相信盆友强忍着读到这里估计都会觉得笔者太罗嗦了，HTTP协议在传输层就是TCP协议实现的嘛</p>
+</blockquote>
+<p>想象一下你和你的基友正在打电话，你们说的是汉语、英语、德语、法语或者基语，是不是都不会影响两个电话之间的通信，电话工作是只要保证把声音传达到位，至于里边的内容，电话是不关心的。</p>
+<blockquote>
+<p>所谓不在其位，不谋其政</p>
+</blockquote>
+<p>而分层协议的工作原理也是一样，TCP作为传输层协议，它仅实现了传输层的某些特性，例如长连接，例如一个高可靠性的传输到位确认机制，但它对它传输的内容，具体怎么被识别或者处理，是不关心的。</p>
+<blockquote>
+<p>TCP也有自己的交互流程和解析机制，但要比HTTP复杂，这里就不讨论了。</p>
+</blockquote>
+<p>而HTTP协议是应用层协议，顾名思义，它关注的是应用，也就是收到传输层TCP收到的消息以后，根据具体的应用进行处理。</p>
+<blockquote>
+<p>除了HTTP以外，常见的诸如HTTPS、FTP、WebSocket等，也都是应用层协议，而它们的传输层都是TCP实现的。</p>
+</blockquote>
+<p>应用层协议百花齐放，传输层的协议却要凋零的多，最常见的，无非是TCP和UDP。</p>
+<blockquote>
+<p>就像有声语言可能有千百种，一个电话一个短信就够了。</p>
+</blockquote>
+<p>所以，在架设自己的TCP Server的时候，要解决的第一个问题，就是，我的应用层协议是什么？</p>
+<h4 id="我心即天心"><a href="#我心即天心" class="headerlink" title="我心即天心"></a>我心即天心</h4><p>首先，要解决应用层协议的问题，先要选择一个传输层协议，基于这个协议的特点，我们再去设计应用层协议。</p>
+<blockquote>
+<p>就像选择开发语言和开发环境一样，虽然说语言只是工具，但工具也有适用场景，不是说绝对不行，只是事倍功半的事儿，必要时还是可以避免的。</p>
+</blockquote>
+<p>就像前文所言，协议的设计完全是由掌握了规则之力的人决定的（例如CTO），笔者这边就不多讨论怎么设计协议才是对的，仅介绍设计基于TCP协议时要注意的问题。</p>
+<h4 id="无尽的数据流"><a href="#无尽的数据流" class="headerlink" title="无尽的数据流"></a>无尽的数据流</h4><p>TCP协议最大的一个特点，就是其传输的数据流是连续的，就像打电话一样，打电话的时候，我们以语气的停顿、语音、语调等作为理解对方意图的辅助元素，那TCP协议传输的数据流，OnReceive的时候也分分钟会遇到类似这样的问题：</p>
+<blockquote>
+<p>假设我们在tellnet中执行了以下的伪代码，向Server发送了7条数据</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; TCP协议最大的一个特点</span><br><span class="line">&gt; 就是其传输的数据流是连续的</span><br><span class="line">&gt; 就像打电话一样</span><br><span class="line">&gt; 打电话的时候</span><br><span class="line">&gt; 我们以语气的停顿</span><br><span class="line">&gt; 语音</span><br><span class="line">&gt; 语调等作为理解对方意图的辅助元素</span><br></pre></td></tr></table></figure>
+<p>此时，虽然Server仍然有90%的可能（主要是网络通畅和输入的速度），OnReceive方法会被回调7次，而且每次收到的数据都与发送时一模一样，仍然不能排除会有以下的可能出现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">TCP协议最大的一个特点就是其传输的数据流是连</span><br><span class="line">续的</span><br><span class="line">就像打</span><br><span class="line">电话一样打电话的时候我</span><br><span class="line">们以语气的停</span><br><span class="line">顿语音语调等作为理解对方意图的辅助元素</span><br></pre></td></tr></table></figure>
+<p>首先，并不一定会回调7次，可能会回调1次就收到了所有数据，也可能要回调70次才能完整的收到所有数据，但是，无论回调多少次，收到的顺序是与发送顺序保持一致的，也就是不会出现以下情况：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">续的</span><br><span class="line">就像打</span><br><span class="line">TCP协议最大的一个特点就是其传输的数据流是连</span><br><span class="line">们以语气的停</span><br><span class="line">顿语音语调等作为理解对方意图的辅助元素</span><br><span class="line">电话一样打电话的时候我</span><br></pre></td></tr></table></figure>
+<p>所以，很多时候，我们都会称呼TCP的数据叫数据流，从传输层来看，TCP的数据包之间没有边界，怎么从TCP的数据流中正确的截取每个数据包，是设计TCP协议的第一步。</p>
+<blockquote>
+<p>这就是传说中的分包和合包</p>
+</blockquote>
+<p>最常见的数据包处理方式有两种，分别是结束符和固定包头两种，Swoole也非常贴心的替我们提供了这两种方案的常规处理，这样我们在使用的时候就不需要自己写分包合包的代码了。</p>
+<h4 id="结束符（EOF）"><a href="#结束符（EOF）" class="headerlink" title="结束符（EOF）"></a>结束符（EOF）</h4><p>结束符处理方式很简单，双方约定各个数据包的结尾有稳定的结束符，且在数据包的正文中不要出现该结束符，那么数据的接收方，只要逐个字节地检查收到的数据，一旦发现结束符，就把上一个结束符（也可能是开头），到当前结束符之间的数据拆出来，作为一个数据包，进行进一步的处理</p>
+<blockquote>
+<p>常见的应用层协议中，MEMCACHE\FTP\STMP都是采用这种思路，它们使用的结束符是“\r\n”</p>
+</blockquote>
+<p>而在Swoole中，可以在配置中这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$server = new \swoole_server(&quot;127.0.0.1&quot;,8088,SWOOLE_PROCESS,SWOOLE_SOCK_TCP);</span><br><span class="line">$server-&gt;set(</span><br><span class="line">    [</span><br><span class="line">        &apos;open_eof_split&apos; =&gt; true,</span><br><span class="line">        &apos;package_eof&apos; =&gt; &quot;\r\n&quot;</span><br><span class="line">    ]</span><br><span class="line">);</span><br><span class="line">// 回调方法略</span><br><span class="line"></span><br><span class="line">$server-start();</span><br></pre></td></tr></table></figure>
+<p>此时，假如发来的数据是根据”\r\n”作为结束符分包的数据流，每次OnReceive的时候，就一定是Swoole已经帮我们分好的数据包，我们直接做进一步的应用协议处理就好了。</p>
+<h4 id="固定包头-包体"><a href="#固定包头-包体" class="headerlink" title="固定包头+包体"></a>固定包头+包体</h4><p>这种方案也是非常非常常见的解决方案，核心设计思路是，每个数据包由两部分组成，分别是固定长度的包头，和不确定长度的包体。包头中描述了包体的长度，接收数据的时候，先按包头的固定长度读取一定的数据，然后解析包头中的内容，获得这个数据包包体的长度，然后继续接收数据，直到收到了跟包头中描述的包体长度一样的数据，进而截断出完整的数据包。</p>
+<blockquote>
+<p>可以说，基本上除了EOF的方式以外，都是这种处理方式</p>
+</blockquote>
+<p>例如说，我们的数据包可以这么写：</p>
+<blockquote>
+<p>这个数据包由十九个字组成今天天气好好啊这个数据包由二十个字组成昨天晚上又加班了</p>
+</blockquote>
+<p>每个数据包的前12个字就是包头，读了包头，我们就知道了整个数据包的长度，减去包头12个字，就知道这个数据包剩下还要读取长了。</p>
+<blockquote>
+<p>当然，作为计算机，使用二进制的方式直接描述数据包才是更常见解决方案。</p>
+</blockquote>
+<p>例如说，我们约定包头的长度是4个byte，这4个byte按照大端序就组成了一个int，而这个int数据描述的就是整个数据包的长度（包括包头本身的4个byte的长度），那么此时，Swoole中的配置应该是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$server-&gt;set(</span><br><span class="line">    [</span><br><span class="line">        &apos;open_length_check&apos; =&gt; true,</span><br><span class="line">        &apos;package_length_type&apos; =&gt; &apos;N&apos;, //N表示32bit的大端序</span><br><span class="line">        &apos;package_length_offset&apos; =&gt; 0,//从第几个字节开始是长度，比如包头长度为4个byte，第0个byte开始就是长度值，那这里就填入0</span><br><span class="line">        &apos;package_body_offset&apos; =&gt; 2,//从第几个字节开始计算长度，比如包头为长度为4个byte，第0个字节为长度值，包体长度为1000。如果长度包含包头，这里填入0，如果不包含包头，这里填入4</span><br><span class="line">        &apos;package_max_length&apos; =&gt; 1024//最大允许的包长度。因为在一个请求包完整接收前，需要将所有数据保存在内存中，所以需要做保护。避免内存占用过大。</span><br><span class="line">    ]</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>关于TCP的通讯协议问题，SWOOLE手册中也有相关的说明<a href="https://wiki.swoole.com/wiki/page/484.html" target="_blank" rel="noopener">网络通信协议设计</a>。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p>今天，笔者简单介绍了应用层协议和传输层协议的关系，并基于TCP协议，给出了基于TCP的应用层协议时，应当注意的问题，也给出了Swoole中相关的一些解决方案，希望能给刚接触网络通信的PHPer们带来一点启发。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/SWOOLE/" rel="tag"># SWOOLE</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/19/swoole-study-3/" rel="next" title="当SWOOLE遇上TCP">
+                <i class="fa fa-chevron-left"></i> 当SWOOLE遇上TCP
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/01/swoole-study-5/" rel="prev" title="Swoole的进程模型">
+                Swoole的进程模型 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#协议，通信的基石"><span class="nav-number">2.</span> <span class="nav-text">协议，通信的基石</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#从HTTP到TCP，从应用层回到传输层"><span class="nav-number">3.</span> <span class="nav-text">从HTTP到TCP，从应用层回到传输层</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#我心即天心"><span class="nav-number">4.</span> <span class="nav-text">我心即天心</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#无尽的数据流"><span class="nav-number">5.</span> <span class="nav-text">无尽的数据流</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结束符（EOF）"><span class="nav-number">6.</span> <span class="nav-text">结束符（EOF）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#固定包头-包体"><span class="nav-number">7.</span> <span class="nav-text">固定包头+包体</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">8.</span> <span class="nav-text">小结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

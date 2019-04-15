@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="SWOOLE," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="转载原文 一直想写点Swoole的东西，毕竟它重新定义了php，却一直不知道怎么下手写  Swoole涉及的知识点非常多，互为表里，每次想写都发现根本理不出一个头绪  Swoole是一个php的扩展，它的核心目的就是解决php在实现server服务中可能遇到的一系列问题">
+<meta name="keywords" content="SWOOLE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="当SWOOLE遇上PHP">
+<meta property="og:url" content="http://yoursite.com/2018/09/15/swoole-study-1/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="转载原文 一直想写点Swoole的东西，毕竟它重新定义了php，却一直不知道怎么下手写  Swoole涉及的知识点非常多，互为表里，每次想写都发现根本理不出一个头绪  Swoole是一个php的扩展，它的核心目的就是解决php在实现server服务中可能遇到的一系列问题">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-12T09:23:23.672Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="当SWOOLE遇上PHP">
+<meta name="twitter:description" content="转载原文 一直想写点Swoole的东西，毕竟它重新定义了php，却一直不知道怎么下手写  Swoole涉及的知识点非常多，互为表里，每次想写都发现根本理不出一个头绪  Swoole是一个php的扩展，它的核心目的就是解决php在实现server服务中可能遇到的一系列问题">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/15/swoole-study-1/"/>
+
+
+
+
+
+  <title>当SWOOLE遇上PHP | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/15/swoole-study-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">当SWOOLE遇上PHP</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-15T23:09:12-04:00">
+                2018-09-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://github.com/szyhf/swoole_study/blob/master/%E5%BD%93SWOOLE%E9%81%87%E4%B8%8APHP.md" target="_blank" rel="noopener">转载原文</a></p>
+<p>一直想写点Swoole的东西，毕竟它重新定义了php，却一直不知道怎么下手写</p>
+<blockquote>
+<p>Swoole涉及的知识点非常多，互为表里，每次想写都发现根本理不出一个头绪</p>
+</blockquote>
+<p>Swoole是一个php的扩展，它的核心目的就是解决php在实现server服务中可能遇到的一系列问题<a id="more"></a>，这些问题用源生的php往往并不能很高效（执行效率）的解决，一般也不会使用php来解决，所以会有说swolle重新定义的php的说法。</p>
+<blockquote>
+<p>毕竟php作为一门成熟的脚本语言，开发效率是先天优势。</p>
+</blockquote>
+<p>扩展的英文名称是Extension，php扩展是用C语言作为开发语言，基于Zend引擎提供的API，编译成的一个动态库。</p>
+<blockquote>
+<p>如果曾经做过类似动态库调用开发的童鞋可能会更好理解一些，例如Android中的NDK开发</p>
+</blockquote>
+<p>在php的配置文件中配置好extension的属性后，就可以引用这个动态库了。</p>
+<blockquote>
+<p>也就是说，swoole本身是用C语言编写的，它可以让php获得一些额外的function。</p>
+</blockquote>
+<p>然后是运行方式，swoole的许多功能都只能运行在cli模式下，而cli模式往往是很多刚接触swoole的phper遇到的第一个问题。</p>
+<blockquote>
+<p>我当初学习swoole的时候也在cli这里栽了个大跟头</p>
+</blockquote>
+<p>我们现在整理一下最常见的php代码执行方式：</p>
+<ol>
+<li>安装apache、php</li>
+<li>配置apache对那个目录进行php解析</li>
+<li>用浏览器访问那个目录的php文件</li>
+</ol>
+<blockquote>
+<p>更多的细节这里就不提了，毕竟我相信每个phper对这个都是很熟悉的。</p>
+</blockquote>
+<p>但这里就开始出现了第一个问题，我们知道，php是一个脚本语言，脚本语言的核心特点在于不用编译，随时执行，而执行脚本的工具就是解析器，而php的解析器就是zend引擎。</p>
+<blockquote>
+<p>严格来说，zend并不是唯一的选择，不过，zend是最官方的。另外，Zend Studio和Zend Engine不是同一个东西，本文中的Zend全部指Zend Engine。</p>
+</blockquote>
+<p>换个角度讲，只要有解析器，写好的php脚本就是可以执行的，而zend引擎与apache之间并没有绝对的关系</p>
+<blockquote>
+<p>实际上，apahce是调用了zend对php脚本进行执行，然后将执行结果输出给了浏览器</p>
+</blockquote>
+<p>所以所谓cli模式（CommandLine，命令行模式），其实就是在命令行下直接调用zend引擎对php脚本进行解析并执行，并获得程序输出结果的php脚本执行方式。</p>
+<blockquote>
+<p>其实php也可以作为shell脚本来使用哦，就像bash shell一样</p>
+</blockquote>
+<p>既然问题讲清楚了，在一个系统中具体怎么操作呢？</p>
+<blockquote>
+<p>本文以CentOS 7.5作为系统环境，swoole是针对linux系统开发的，windows下并不适用。学习swoole的一个前题是懂得基本的linux系统使用。</p>
+</blockquote>
+<p>当安装好php的时候，找到php的安装目录，如果是默认安装的话，可以试试whereis命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 某种简单的方法</span><br><span class="line">whereis php</span><br><span class="line">&gt; /usr/local/bin/php;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>locate whereis find这些命令都可以试试，目的是找到php</p>
+</blockquote>
+<p>然后我们来写一个最经典的php脚本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//vi hello_cli.php</span><br><span class="line">&lt;?php</span><br><span class="line">    echo &apos;Hello PHP Cli&apos;;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>编写纯php脚本时，php标签不要封口</p>
+</blockquote>
+<p>然后我们在shell里执行它：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/bin/php hello_cli.php</span><br><span class="line">&gt; Hello PHP Cli</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这段代码中的第一个php，是一个可执行文件，它接受一个php脚本文件作为输入参数，并解析执行这个php脚本文件（通过zend）。</p>
+</blockquote>
+<p>没有错，第一个cli模式下的php程序就被你执行成功了！</p>
+<blockquote>
+<p>默认情况下，php都会被安装在了$PATH的目录下，那就可以直接省略路径前缀了，下文中调用php的时候，全都省略了路径前缀。</p>
+</blockquote>
+<p>因为swoole是pecl的项目，所以使用pecl安装是最简单的方法，强烈推荐第一次接触的童鞋先使用pecl安装，在熟悉了swoole之后，再考虑使用编译安装的方式以获取更多进阶功能。</p>
+<blockquote>
+<p>pecl这个工具基本都会被安装在与php相同的目录下（往往也都是$PATH目录）</p>
+</blockquote>
+<blockquote>
+<p>pecl install swoole</p>
+</blockquote>
+<p>执行以下命令查看是否安装成功：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">php -m | grep swoole</span><br><span class="line">&gt; swoole</span><br></pre></td></tr></table></figure>
+<p>如果正确的输出了swoole，那么恭喜你，这次安装很成功</p>
+<blockquote>
+<p>另一个常见的比较麻烦的问题是，有些童鞋的电脑里安装了多个php，而安装的时候没有正确的安装到预期的php的扩展目录中，就会导致无法正常工作，解决方案就是弄清楚各个php安装目录及配置关系，选择正确的目录进行安装。</p>
+</blockquote>
+<p>其实本文还没正式开始介绍swoole，都是在学习swoole之前的准备工作，swoole的上手门槛比一般的php应用要高的多，如果没有网络开发和操作系统方面的一些知识，学习它并不是一件容易的事情，学习曲线很陡峭。</p>
+<p>很多新手会诟病swoole的手册写的太模糊，其实是前置知识不足，而手册也给出了需要的前置知识列表，以下引用至官网的手册-学习swoole需要哪些知识？</p>
+<h4 id="多进程-多线程"><a href="#多进程-多线程" class="headerlink" title="多进程/多线程"></a>多进程/多线程</h4><ul>
+<li>了解Linux操作系统进程和线程的概念</li>
+<li>了解Linux进程/线程切换调度的基本知识</li>
+<li>了解进程间通信的基本知识，如管道、UnixSocket、消息队列、共享内存</li>
+</ul>
+<h4 id="socket"><a href="#socket" class="headerlink" title="socket"></a>socket</h4><ul>
+<li>了解SOCKET的基本操作如accept/connect、send/recv、close、listen、bind</li>
+<li>了解SOCKET的接收缓存区、发送缓存区、阻塞/非阻塞、超时等概念</li>
+</ul>
+<h4 id="IO复用"><a href="#IO复用" class="headerlink" title="IO复用"></a>IO复用</h4><ul>
+<li>了解select/poll/epoll</li>
+<li>了解基于select/epoll实现的事件循环，Reactor模型</li>
+<li>了解可读事件、可写事件</li>
+</ul>
+<h4 id="TCP-IP网络协议"><a href="#TCP-IP网络协议" class="headerlink" title="TCP/IP网络协议"></a>TCP/IP网络协议</h4><ul>
+<li>了解TCP/IP协议</li>
+<li>了解TCP、UDP传输协议</li>
+</ul>
+<h4 id="调试工具"><a href="#调试工具" class="headerlink" title="调试工具"></a>调试工具</h4><ul>
+<li>使用gdb调试Linux程序</li>
+<li>使用strace跟踪进程的系统调用</li>
+<li>使用tcpdump跟踪网络通信过程</li>
+<li>其他Linux系统工具，如ps、lsof、top、vmstat、netstat、sar、ss等</li>
+</ul>
+<p>学习并理解一个新事务并不是一个容易的事情，特别对于swoole这种具备一定颠覆性的工具，要有耐心和实践。</p>
+<blockquote>
+<p>淡定的把手册看完，遇到不理解的名字学会使用搜索引擎学习，swoole的手册其实是个大宝库，网络开发常见的问题其实里边都涉及到了。</p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/SWOOLE/" rel="tag"># SWOOLE</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/09/php-error/" rel="next" title="PHP完善的Error/ Exception的捕获与处理">
+                <i class="fa fa-chevron-left"></i> PHP完善的Error/ Exception的捕获与处理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/17/swoole-study-2/" rel="prev" title="当SWOOLE遇上SERVER">
+                当SWOOLE遇上SERVER <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#多进程-多线程"><span class="nav-number">1.</span> <span class="nav-text">多进程/多线程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#socket"><span class="nav-number">2.</span> <span class="nav-text">socket</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IO复用"><span class="nav-number">3.</span> <span class="nav-text">IO复用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-IP网络协议"><span class="nav-number">4.</span> <span class="nav-text">TCP/IP网络协议</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#调试工具"><span class="nav-number">5.</span> <span class="nav-text">调试工具</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="ES," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="1.从安装elasticsearch开始从elasticsearch官网下载软件包，因为公司数据仓库用的是5.3版本，所以我下载了elasticasearch-5.3。">
+<meta name="keywords" content="ES">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识elastcisearch">
+<meta property="og:url" content="http://yoursite.com/2018/07/16/elasticsearch-1/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="1.从安装elasticsearch开始从elasticsearch官网下载软件包，因为公司数据仓库用的是5.3版本，所以我下载了elasticasearch-5.3。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/elasticsearch-1/2.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/elasticsearch-1/3.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/elasticsearch-1/1.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/16/elasticsearch-1/4.jpg">
+<meta property="og:updated_time" content="2019-04-15T02:05:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="初识elastcisearch">
+<meta name="twitter:description" content="1.从安装elasticsearch开始从elasticsearch官网下载软件包，因为公司数据仓库用的是5.3版本，所以我下载了elasticasearch-5.3。">
+<meta name="twitter:image" content="http://yoursite.com/2018/07/16/elasticsearch-1/2.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/16/elasticsearch-1/"/>
+
+
+
+
+
+  <title>初识elastcisearch | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/elasticsearch-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">初识elastcisearch</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-16T09:23:47-04:00">
+                2018-07-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-从安装elasticsearch开始"><a href="#1-从安装elasticsearch开始" class="headerlink" title="1.从安装elasticsearch开始"></a>1.从安装elasticsearch开始</h3><p>从<a href="https://www.elastic.co/downloads/past-releases" target="_blank" rel="noopener">elasticsearch官网</a>下载软件包，因为公司数据仓库用的是5.3版本，所以我下载了elasticasearch-5.3。<br><a id="more"></a><br>当你解压好了归档文件之后，Elasticsearch 已经准备好运行了。按照下面的操作，在前台(foregroud)启动 Elasticsearch：</p>
+<blockquote>
+<p>su elasticserach (切换到非root用户，我新建了用户elasticsearch)<br>cd elasticsearch-5.3.0<br>./bin/elasticsearch (注意不能以root用户运行) </p>
+</blockquote>
+<p>如图启动服务成功时的样子:</p>
+<p><img src="/2018/07/16/elasticsearch-1/2.jpg" alt="p2"></p>
+<p>测试 Elasticsearch 是否启动成功，可以打开另一个终端，执行以下操作：</p>
+<blockquote>
+<p>curl ‘<a href="http://localhost:9200/?pretty&#39;" target="_blank" rel="noopener">http://localhost:9200/?pretty&#39;</a></p>
+</blockquote>
+<p>你应该得到和下面类似的响应(response)：</p>
+<p><img src="/2018/07/16/elasticsearch-1/3.jpg" alt="p3"></p>
+<p>这就意味着你现在已经启动并运行一个 Elasticsearch 节点了，你可以用它做实验了。 单个 节点 可以作为一个运行中的 Elasticsearch 的实例。</p>
+<h3 id="2-安装插件elasticsearch-head（类似navicat之于mysql）"><a href="#2-安装插件elasticsearch-head（类似navicat之于mysql）" class="headerlink" title="2.安装插件elasticsearch-head（类似navicat之于mysql）"></a>2.安装插件elasticsearch-head（类似navicat之于mysql）</h3><p>搭建elasticsearch-head服务（之前需安装nodejs）</p>
+<blockquote>
+<p>git clone git://github.com/mobz/elasticsearch-head.git<br>cd elasticsearch-head<br>npm install<br>npm run start<br>open <a href="http://localhost:9100/" target="_blank" rel="noopener">http://localhost:9100/</a>  </p>
+</blockquote>
+<p>浏览器查看数据如图:</p>
+<p><img src="/2018/07/16/elasticsearch-1/1.jpg" alt="p1"></p>
+<h3 id="3-也许你还需要同步mysql至elasticsearch"><a href="#3-也许你还需要同步mysql至elasticsearch" class="headerlink" title="3.也许你还需要同步mysql至elasticsearch"></a>3.也许你还需要同步mysql至elasticsearch</h3><p>搭建go-mysql-elasticsearch服务</p>
+<blockquote>
+<p>安装 Go (1.6+) 然后设置 GO的环境变量<br>git clone <a href="mailto:git@github.com" target="_blank" rel="noopener">git@github.com</a>:siddontang/go-mysql-elasticsearch.git<br>cd $GOPATH/src/github.com/siddontang/go-mysql-elasticsearch<br>make</p>
+</blockquote>
+<p>在目录$GOPATH/src/github.com/siddontang/go-mysql-elasticsearch/etc/之下建立toml文件，用做同步配置</p>
+<p>具体参见<a href="https://github.com/siddontang/go-mysql-elasticsearch" target="_blank" rel="noopener">go-mysql-elasticsearch官网</a></p>
+<p>以上搭建elasticsearch引擎、数据同步工具和查看工具完成</p>
+<h3 id="4-php安装elasticsearch扩展"><a href="#4-php安装elasticsearch扩展" class="headerlink" title="4.php安装elasticsearch扩展"></a>4.php安装elasticsearch扩展</h3><p>使用composer安装扩展，在composer.json中写入</p>
+<blockquote>
+<p>{<br>     “require”: {<br>         “elasticsearch/elasticsearch”: “~5.0”<br>     }<br> }</p>
+</blockquote>
+<p>因为我安装的是5.3.0，故使用”~5.0”，如果安装的6.0以上，需使用”~6.0”。</p>
+<h3 id="5-创建elasticsearch索引（类似mysql的数据库）"><a href="#5-创建elasticsearch索引（类似mysql的数据库）" class="headerlink" title="5.创建elasticsearch索引（类似mysql的数据库）"></a>5.创建elasticsearch索引（类似mysql的数据库）</h3><p>我使用代码的方式创建索引，如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line">class EsClient</span><br><span class="line">&#123;</span><br><span class="line">    private $client;</span><br><span class="line">    //初始化连接elasticsearch</span><br><span class="line">    public function __construct()&#123;</span><br><span class="line">        $this-&gt;client = ClientBuilder::create()-&gt;setHosts([&apos;127.0.0.1:9200&apos;])-&gt;build(); //这边填ip地址</span><br><span class="line">    &#125;</span><br><span class="line">    //查询索引内容</span><br><span class="line">    public function getSource($scheme,$body)&#123;</span><br><span class="line">        $params = [</span><br><span class="line">            &apos;index&apos; =&gt;  $scheme,   //[&apos;log_osdk_payment_stat_daily&apos;, &apos;my_index2&apos;],可以通过这种形式进行跨库查询</span><br><span class="line">            &apos;type&apos; =&gt; $scheme,//[&apos;my_type1&apos;, &apos;my_type2&apos;],</span><br><span class="line">            &apos;body&apos; =&gt; $body</span><br><span class="line">        ];</span><br><span class="line"></span><br><span class="line">        $res = $this-&gt;client-&gt;search($params);</span><br><span class="line">        return $res;</span><br><span class="line">    &#125;    </span><br><span class="line">    </span><br><span class="line">    //创建设备信息表的索引</span><br><span class="line">    public function createDeviceInfoIndex()</span><br><span class="line">    &#123;</span><br><span class="line">        $index = [&apos;log_osdk_device_info_196377445_201804&apos;];</span><br><span class="line">        foreach ($index as $v)&#123;</span><br><span class="line">            $params = [</span><br><span class="line">                &apos;index&apos; =&gt; $v,</span><br><span class="line">                &apos;body&apos; =&gt; [</span><br><span class="line">                    &apos;settings&apos; =&gt; [</span><br><span class="line">                        &apos;number_of_shards&apos; =&gt; 5,</span><br><span class="line">                        &apos;number_of_replicas&apos; =&gt; 1</span><br><span class="line">                    ],</span><br><span class="line">                    &apos;mappings&apos; =&gt; [</span><br><span class="line">                        $v =&gt; [</span><br><span class="line">                            &apos;_source&apos; =&gt; [</span><br><span class="line">                                &apos;enabled&apos; =&gt; true</span><br><span class="line">                            ],</span><br><span class="line">                            &apos;properties&apos; =&gt; [</span><br><span class="line">                                &apos;osdk_game_id&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;text&apos;,</span><br><span class="line">                                    &apos;fielddata&apos; =&gt; true //text如果fielddata为false，将不支持聚合操作</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;deivce_id&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;text&apos;,</span><br><span class="line">                                    &apos;fielddata&apos; =&gt; true</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;factory&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;model&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;os&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;total_mem&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;mem_standard&apos; =&gt;[</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;total_disk&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;disk_standard&apos; =&gt;[</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line">                                &apos;resolution&apos; =&gt;[</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;keyword&apos;,</span><br><span class="line">                                ],</span><br><span class="line"></span><br><span class="line">                                &apos;tt&apos; =&gt; [</span><br><span class="line">                                    &apos;type&apos; =&gt; &apos;text&apos;,</span><br><span class="line">                                    &apos;fielddata&apos; =&gt; true</span><br><span class="line">                                ],</span><br><span class="line">                            ]</span><br><span class="line">                        ]</span><br><span class="line">                    ]</span><br><span class="line">                ]</span><br><span class="line">            ];</span><br><span class="line">            $response = $this-&gt;client-&gt;indices()-&gt;create($params);</span><br><span class="line">        &#125;</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="使用DSL语句进行查询，php-elasticsearch将其封装成了数组"><a href="#使用DSL语句进行查询，php-elasticsearch将其封装成了数组" class="headerlink" title="使用DSL语句进行查询，php-elasticsearch将其封装成了数组"></a>使用DSL语句进行查询，php-elasticsearch将其封装成了数组</h3><p>直接放代码了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">use modules\Data\components\EsClient;</span><br><span class="line">class LogDeviceInfoService</span><br><span class="line">&#123;</span><br><span class="line">    /**</span><br><span class="line">     * SELECT COUNT(*) as num,model from log_osdk_device_info_196377445_201804 where tt BETWEEN 20180401 AND 20180430 GROUP BY model ORDER BY num DESC limit 5</span><br><span class="line">     * @param $game_id</span><br><span class="line">     * @param $field</span><br><span class="line">     * @param $begin_date</span><br><span class="line">     * @param $end_date</span><br><span class="line">     * @return mixed</span><br><span class="line">     */</span><br><span class="line">    public function getCountGroupByFieldFromDeviceInfo($game_id, $field, $begin_date, $end_date)</span><br><span class="line">    &#123;</span><br><span class="line">        $scheme = &apos;log_osdk_device_info_196377445_201804&apos;;</span><br><span class="line">        $body =</span><br><span class="line">            [</span><br><span class="line">                &apos;query&apos; =&gt; [</span><br><span class="line">                    &apos;bool&apos; =&gt; [</span><br><span class="line">                        &apos;filter&apos; =&gt; [</span><br><span class="line">                            &quot;range&quot; =&gt; [</span><br><span class="line">                                &quot;tt&quot; =&gt; [</span><br><span class="line">                                    &quot;gte&quot; =&gt; $begin_date, &quot;lte&quot; =&gt; $end_date</span><br><span class="line">                                ]</span><br><span class="line">                            ],</span><br><span class="line">                        ],</span><br><span class="line">                       &quot;must&quot; =&gt; [</span><br><span class="line">                            [&quot;term&quot; =&gt; [&quot;osdk_game_id&quot; =&gt; $game_id]],</span><br><span class="line">                        ],</span><br><span class="line">                        &quot;must_not&quot; =&gt; [</span><br><span class="line">                            [&quot;term&quot; =&gt; [$field =&gt; &apos;&apos;]],</span><br><span class="line">                        ]</span><br><span class="line">                    ],</span><br><span class="line">                ],</span><br><span class="line">                &quot;aggs&quot; =&gt; [</span><br><span class="line">                    &quot;group_by&quot;=&gt;[</span><br><span class="line">                        &quot;terms&quot;=&gt;[</span><br><span class="line">                            &quot;field&quot;=&gt;$field,</span><br><span class="line">                            &quot;size&quot;=&gt; 5,</span><br><span class="line">                        ],</span><br><span class="line">                    ],</span><br><span class="line">                ],</span><br><span class="line">            ];</span><br><span class="line">        $es_client = new EsClient();</span><br><span class="line">        $result = $es_client-&gt;getSource($scheme, $body)[&apos;aggregations&apos;][&apos;group_by&apos;][&apos;buckets&apos;];</span><br><span class="line">        return $result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * SELECT COUNT(*) from log_osdk_device_info_196377445_201804 where tt BETWEEN 20180401 AND 20180430</span><br><span class="line">     * @param $game_id</span><br><span class="line">     * @param $begin_date</span><br><span class="line">     * @param $end_date</span><br><span class="line">     * @return mixed</span><br><span class="line">     */</span><br><span class="line">    public function getCountFromDeviceInfo($game_id, $begin_date, $end_date)</span><br><span class="line">    &#123;</span><br><span class="line">        $scheme = &apos;log_osdk_device_info_196377445_201804&apos;;</span><br><span class="line">        $body =</span><br><span class="line">            [</span><br><span class="line">                &apos;query&apos; =&gt; [</span><br><span class="line">                    &apos;bool&apos; =&gt; [</span><br><span class="line">                        &apos;filter&apos; =&gt; [</span><br><span class="line">                            &quot;range&quot; =&gt; [</span><br><span class="line">                                &quot;tt&quot; =&gt; [</span><br><span class="line">                                    &quot;gte&quot; =&gt; $begin_date, &quot;lte&quot; =&gt; $end_date</span><br><span class="line">                                ]</span><br><span class="line">                            ],</span><br><span class="line">                        ],</span><br><span class="line">                       &quot;must&quot; =&gt; [</span><br><span class="line">                            [&quot;term&quot; =&gt; [&quot;osdk_game_id&quot; =&gt; $game_id]],</span><br><span class="line">                        ],</span><br><span class="line">                    ],</span><br><span class="line">                ],</span><br><span class="line">            ];</span><br><span class="line">        $es_client = new EsClient();</span><br><span class="line">        $result = $es_client-&gt;getSource($scheme, $body)[&apos;hits&apos;][&apos;total&apos;];</span><br><span class="line">        return $result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>getCountGroupByFieldFromDeviceInfo的返回是这样的:</p>
+<p><img src="/2018/07/16/elasticsearch-1/4.jpg" alt="p4"></p>
+<p>今天就写这些了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ES/" rel="tag"># ES</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/10/RPC原理及PHP的RPC框架/" rel="next" title="RPC原理及PHP的RPC框架">
+                <i class="fa fa-chevron-left"></i> RPC原理及PHP的RPC框架
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/16/algorithm-2/" rel="prev" title="php实现经典算法-2">
+                php实现经典算法-2 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-从安装elasticsearch开始"><span class="nav-number">1.</span> <span class="nav-text">1.从安装elasticsearch开始</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-安装插件elasticsearch-head（类似navicat之于mysql）"><span class="nav-number">2.</span> <span class="nav-text">2.安装插件elasticsearch-head（类似navicat之于mysql）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-也许你还需要同步mysql至elasticsearch"><span class="nav-number">3.</span> <span class="nav-text">3.也许你还需要同步mysql至elasticsearch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-php安装elasticsearch扩展"><span class="nav-number">4.</span> <span class="nav-text">4.php安装elasticsearch扩展</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-创建elasticsearch索引（类似mysql的数据库）"><span class="nav-number">5.</span> <span class="nav-text">5.创建elasticsearch索引（类似mysql的数据库）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用DSL语句进行查询，php-elasticsearch将其封装成了数组"><span class="nav-number">6.</span> <span class="nav-text">使用DSL语句进行查询，php-elasticsearch将其封装成了数组</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

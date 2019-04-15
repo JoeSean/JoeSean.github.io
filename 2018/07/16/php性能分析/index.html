@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="PHP," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="什么是XHPROF？XHPROF：Facebook 开源的轻量级PHP性能分析工具。 它报告函数级别的请求次数和各种指标，包括阻塞时间，CPU时间和内存使用情况。">
+<meta name="keywords" content="PHP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP性能分析及追踪工具（XHPROF）">
+<meta property="og:url" content="http://yoursite.com/2018/07/16/php性能分析/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="什么是XHPROF？XHPROF：Facebook 开源的轻量级PHP性能分析工具。 它报告函数级别的请求次数和各种指标，包括阻塞时间，CPU时间和内存使用情况。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/1.png">
+<meta property="og:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/2.png">
+<meta property="og:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/3.png">
+<meta property="og:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/4.gif">
+<meta property="og:updated_time" content="2019-04-12T09:23:20.626Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP性能分析及追踪工具（XHPROF）">
+<meta name="twitter:description" content="什么是XHPROF？XHPROF：Facebook 开源的轻量级PHP性能分析工具。 它报告函数级别的请求次数和各种指标，包括阻塞时间，CPU时间和内存使用情况。">
+<meta name="twitter:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/16/php性能分析/"/>
+
+
+
+
+
+  <title>PHP性能分析及追踪工具（XHPROF） | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/16/php性能分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PHP性能分析及追踪工具（XHPROF）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-16T23:07:28-04:00">
+                2018-07-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="什么是XHPROF？"><a href="#什么是XHPROF？" class="headerlink" title="什么是XHPROF？"></a>什么是XHPROF？</h3><p>XHPROF：Facebook 开源的轻量级PHP性能分析工具。</p>
+<p>它报告函数级别的请求次数和各种指标，包括阻塞时间，CPU时间和内存使用情况。<br><a id="more"></a><br>XHProf分析报告有助于理解被执行的代码的结构，它有一个简单的HTML的用户界面（ PHP写成的）。</p>
+<p>基于浏览器的性能分析用户界面能更容易查看，或是与同行们分享成果。</p>
+<p>也能绘制调用关系图。</p>
+<h3 id="XHPROF-与-Xdebug-区别"><a href="#XHPROF-与-Xdebug-区别" class="headerlink" title="XHPROF 与 Xdebug 区别"></a>XHPROF 与 Xdebug 区别</h3><p>Xdebug 是一个开放源代码的PHP程序调试器(即一个Debug工具)。</p>
+<p>对于本地开发环境来说，进行性能分析 Xdebug 是够用了。</p>
+<p>但如果是线上环境的话，Xdebug 消耗较大，配置也不够灵活。</p>
+<h3 id="如何安装-XHPROF-？"><a href="#如何安装-XHPROF-？" class="headerlink" title="如何安装 XHPROF ？"></a>如何安装 XHPROF ？</h3><blockquote>
+<p>//源码安装<br> cd /usr/local/src<br> //php5.6版本<br> git clone <a href="https://github.com/phacility/xhprof.git" target="_blank" rel="noopener">https://github.com/phacility/xhprof.git</a><br> //php7以上版本<br> git clone <a href="https://github.com/longxinH/xhprof.git" target="_blank" rel="noopener">https://github.com/longxinH/xhprof.git</a><br> //进入目录进行扩展编译<br> cd xhprof/extension<br> /usr/local/php/bin/phpize<br> ./configure –with-php-config=/usr/local/php/bin/php-config<br> make<br> make install<br> //在 php.ini 末尾新增<br> [xhprof]<br> extension = xhprof.so<br> xhprof.output_dir = 自定义文件夹(/tmp/xhprof_log)<br> // /tmp/xhprof_log 必须存在且有写入权限<br> //重启环境<br> //代码中查看 phpinfo 是否包含 xhprof。<br> //一切顺利的话，那么 xhprof 安装成功。  </p>
+</blockquote>
+<h3 id="如何配置-XHPROF？"><a href="#如何配置-XHPROF？" class="headerlink" title="如何配置 XHPROF？"></a>如何配置 XHPROF？</h3><blockquote>
+<p>//比如项目地址：local.test_xhprof.com<br> //在项目入口文件中新增一下代码（CI框架为例）<br> xhprof_enable(XHPROF_FLAGS_NO_BUILTINS +<br>               XHPROF_FLAGS_CPU +<br>               XHPROF_FLAGS_MEMORY);<br> register_shutdown_function(function(){<br>     $data = xhprof_disable();   //返回运行数据<br>     //xhprof_lib 在下载的包里存在这个目录,记得将目录包含到运行的php代码中<br>     include ‘/home/www/mi/xhprof/xhprof_lib/utils/xhprof_lib.php’;<br>     include ‘/home/www/mi/xhprof/xhprof_lib/utils/xhprof_runs.php’;<br>     $objXhprofRun = new XHProfRuns_Default();<br>     $objXhprofRun-&gt;save_run($data, “test”); //test 表示文件后缀<br> });<br> //一切顺利的话，那么代码安装成功。<br> //访问：local.test_xhprof.com，应该在 /tmp/xhprof_log 存在日志文件。  </p>
+</blockquote>
+<h3 id="如何运行"><a href="#如何运行" class="headerlink" title="如何运行"></a>如何运行</h3><p>可以直接运行从github上clone下来的文件里面example目录下的那个例子</p>
+<p>输出如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Array</span><br><span class="line">(</span><br><span class="line">    [main()] =&gt; Array</span><br><span class="line">        (</span><br><span class="line">            [ct] =&gt; 1</span><br><span class="line">            [wt] =&gt; 9</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">)</span><br><span class="line">---------------</span><br><span class="line">Assuming you have set up the http based UI for </span><br><span class="line">XHProf at some address, you can view run at </span><br><span class="line">http://&lt;xhprof-ui-address&gt;/index.php?run=592567308784c&amp;source=xhprof_foo</span><br><span class="line">---------------</span><br></pre></td></tr></table></figure></p>
+<p>然后复制index.php后面的?run=592567308784c&amp;source=xhprof_foo</p>
+<p>访问</p>
+<blockquote>
+<p>xhprof_html/index.php?run=592567308784c&amp;source=xhprof_foo</p>
+</blockquote>
+<p>可看见输出</p>
+<p><img src="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/1.png" alt="p1"></p>
+<p>点击中间的 View Full Callgraph 即可看见性能分析图片</p>
+<p>在生成图的时候需要服务器装一个插件：graphviz。</p>
+<blockquote>
+<p>cd /usr/local/src<br> wget <a href="http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.24.0.tar.gz" target="_blank" rel="noopener">http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.24.0.tar.gz</a><br> tar zxvf graphviz-2.24.0.tar.gz<br> cd graphviz-2.24.0<br> ./configure<br> make<br> make install<br> 如果点击 [View Full Callgraph] 依旧无法打开。<br> 报错：failed to execute cmd “ dot -Tpng”<br> 表示：php.ini 中一些执行函数禁用了。<br> 在 php.ini 中 去掉 disable_functions 中的如下函数<br> system<br> shell_exec<br> proc_open<br> proc_get_status<br> PHP 重启一下。<br> 一切顺利的话，应该不会报错了，就可以看到高大上的效果图啦。  </p>
+</blockquote>
+<p>如果想测试自己的项目，例如一款框架的性能分析。</p>
+<p>复制xhprof_lib/utils/下的两个文件</p>
+<p>xhprof_lib.php和xhprof_runs.php到入口文件同级目录，然后在入口文件起始位置添加</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// start profiling</span><br><span class="line">xhprof_enable();</span><br></pre></td></tr></table></figure>
+<p>结束位置添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// stop profiler</span><br><span class="line">$xhprof_data = xhprof_disable();</span><br><span class="line"></span><br><span class="line">// display raw xhprof data for the profiler run</span><br><span class="line">print_r($xhprof_data);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">include_once &quot;xhprof_lib.php&quot;;</span><br><span class="line">include_once &quot;xhprof_runs.php&quot;;</span><br><span class="line"></span><br><span class="line">// save raw data for this profiler run using default</span><br><span class="line">// implementation of iXHProfRuns.</span><br><span class="line">$xhprof_runs = new XHProfRuns_Default();</span><br><span class="line"></span><br><span class="line">// save the run under a namespace &quot;xhprof_foo&quot;</span><br><span class="line">$run_id = $xhprof_runs-&gt;save_run($xhprof_data, &quot;xhprof_foo&quot;);</span><br><span class="line"></span><br><span class="line">echo &quot;---------------\n&quot;.</span><br><span class="line">     &quot;Assuming you have set up the http based UI for \n&quot;.</span><br><span class="line">     &quot;XHProf at some address, you can view run at \n&quot;.</span><br><span class="line">     &quot;http://&lt;xhprof-ui-address&gt;/index.php?run=$run_id&amp;source=xhprof_foo\n&quot;.</span><br><span class="line">     &quot;---------------\n&quot;;</span><br></pre></td></tr></table></figure></p>
+<p>即可得到如上所示的那个url，然后再次去访问</p>
+<p>http://<strong><em>/xhprof_html/index.php?run=**</em></strong>&amp;source=xhprof_foo </p>
+<p>得到如下所示页面</p>
+<p><img src="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/2.png" alt="p2"></p>
+<p>点击”View Full Callgraph”显示下图。</p>
+<p><img src="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/3.png" alt="p3"></p>
+<h3 id="如何-UI-展示？"><a href="#如何-UI-展示？" class="headerlink" title="如何 UI 展示？"></a>如何 UI 展示？</h3><p>可能大家有一些疑问：</p>
+<blockquote>
+<p>是否能有更好的UI展示？<br>当服务器上有多个站点的时候，是否配置一次即可？  </p>
+</blockquote>
+<p>接下来给大家介绍：xhprof gui</p>
+<p>xhprof gui : 一个xhprof的一个ui展现。</p>
+<p>使 xhprof 界面更漂亮，功能更强大。</p>
+<blockquote>
+<p>友好的界面<br>数据库存储（mysql）<br>支持按请求百分比执行 xhprof 优化。<br>降低服务器负载。</p>
+</blockquote>
+<h3 id="如何配置-xhprof-gui"><a href="#如何配置-xhprof-gui" class="headerlink" title="如何配置 xhprof gui"></a>如何配置 xhprof gui</h3><p>源码地址：<a href="https://github.com/preinheimer/xhprof" target="_blank" rel="noopener">https://github.com/preinheimer/xhprof</a></p>
+<p>下载后存放到：xhprof_gui 文件中。</p>
+<p>配置虚拟主机(local.xhprofgui.com)</p>
+<p>local.xhprofgui.com 指向 /home/www/mi/xhprof_gui/ 即可。</p>
+<p>第一步，需要将 xhprof_gui/xhprof_lib/config.sample.php 重命名 为 config.php。</p>
+<p>第二步，根据 config.php 中数据库变量(dbuser、dbpass、dbname)，配置一个数据库。</p>
+<p>第三步，将 config.php 中 doprofile 设置为 true。</p>
+<p>第四步，创建一张表。</p>
+<blockquote>
+<p>//源代码：xhprof_lib/utils/xhprof_runs.php<br> CREATE TABLE <code>details</code> (<br>   <code>id</code> char(17) NOT NULL,<br>   <code>url</code> varchar(255) default NULL,<br>   <code>c_url</code> varchar(255) default NULL,<br>   <code>timestamp</code> timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,<br>   <code>server name</code> varchar(64) default NULL,<br>   <code>perfdata</code> MEDIUMBLOB,<br>   <code>type</code> tinyint(4) default NULL,<br>   <code>cookie</code> BLOB,<br>   <code>post</code> BLOB,<br>   <code>get</code> BLOB,<br>   <code>pmu</code> int(11) unsigned default NULL,<br>   <code>wt</code> int(11) unsigned default NULL,<br>   <code>cpu</code> int(11) unsigned default NULL,<br>   <code>server_id</code> char(3) NOT NULL default ‘t11’,<br>   <code>aggregateCalls_include</code> varchar(255) DEFAULT NULL,<br>   PRIMARY KEY  (<code>id</code>),<br>   KEY <code>url</code> (<code>url</code>),<br>   KEY <code>c_url</code> (<code>c_url</code>),<br>   KEY <code>cpu</code> (<code>cpu</code>),<br>   KEY <code>wt</code> (<code>wt</code>),<br>   KEY <code>pmu</code> (<code>pmu</code>),<br>   KEY <code>timestamp</code> (<code>timestamp</code>)<br> ) ENGINE=MyISAM DEFAULT CHARSET=utf8;  </p>
+</blockquote>
+<p> 如果是 Nginx 服务器 新增配置：</p>
+<blockquote>
+<p>fastcgi_param PHP_VALUE “auto_prepend_file=/home/www/mi/xhprof_gui/external/header.php”;</p>
+</blockquote>
+<p>如果是 Apache 服务器：</p>
+<blockquote>
+<p>php_admin_value auto_prepend_file “/home/www/mi/xhprof_gui/external/header.php”</p>
+</blockquote>
+<p>配置到这里，可以运行下。</p>
+<p>简单说明下：</p>
+<p>如果你配置在公共的配置文件中，那么表示站点上所有的域名访问都会进行日志记录。</p>
+<p>如果你配置在单个域名的配置文件中，表示只有访问当前域名的时候回进入日志记录。</p>
+<p>例如单个域名为：local.xh.test.com</p>
+<p>如果报错，可以调试下 header.php。</p>
+<p>以上配置，存储使用的是Mysql。</p>
+<p>存储也可以使用MongoDB，大家可以研究下 ~</p>
+<p>如果看到效果？</p>
+<p>访问 local.xh.test.com，记录日志。</p>
+<p>访问 local.xhprofgui.com，查看效果。</p>
+<p>效果图，如下：</p>
+<p><img src="http://oxp5uo96p.bkt.clouddn.com/hexo/xhprof/4.gif" alt="p4"></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/PHP/" rel="tag"># PHP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/16/algorithm-2/" rel="next" title="php实现经典算法-2">
+                <i class="fa fa-chevron-left"></i> php实现经典算法-2
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/18/设计模式-1/" rel="prev" title="设计模式简介">
+                设计模式简介 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是XHPROF？"><span class="nav-number">1.</span> <span class="nav-text">什么是XHPROF？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#XHPROF-与-Xdebug-区别"><span class="nav-number">2.</span> <span class="nav-text">XHPROF 与 Xdebug 区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何安装-XHPROF-？"><span class="nav-number">3.</span> <span class="nav-text">如何安装 XHPROF ？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何配置-XHPROF？"><span class="nav-number">4.</span> <span class="nav-text">如何配置 XHPROF？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何运行"><span class="nav-number">5.</span> <span class="nav-text">如何运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何-UI-展示？"><span class="nav-number">6.</span> <span class="nav-text">如何 UI 展示？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何配置-xhprof-gui"><span class="nav-number">7.</span> <span class="nav-text">如何配置 xhprof gui</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

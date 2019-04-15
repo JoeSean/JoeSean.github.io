@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Redis," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="Redis目前支持5种数据类型，分别是：    String（字符串）List（列表）Hash（字典）Set（集合）Sorted Set（有序集合）  下面就分别介绍这五种数据类型及其相应的操作命令。">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis常用数据类型介绍、使用场景及其操作命令">
+<meta property="og:url" content="http://yoursite.com/2017/08/11/Redis-1/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="Redis目前支持5种数据类型，分别是：    String（字符串）List（列表）Hash（字典）Set（集合）Sorted Set（有序集合）  下面就分别介绍这五种数据类型及其相应的操作命令。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-12T09:23:21.373Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis常用数据类型介绍、使用场景及其操作命令">
+<meta name="twitter:description" content="Redis目前支持5种数据类型，分别是：    String（字符串）List（列表）Hash（字典）Set（集合）Sorted Set（有序集合）  下面就分别介绍这五种数据类型及其相应的操作命令。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/08/11/Redis-1/"/>
+
+
+
+
+
+  <title>Redis常用数据类型介绍、使用场景及其操作命令 | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/11/Redis-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Redis常用数据类型介绍、使用场景及其操作命令</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-11T02:16:08-04:00">
+                2017-08-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Redis目前支持5种数据类型，分别是：  </p>
+<blockquote>
+<p>String（字符串）<br>List（列表）<br>Hash（字典）<br>Set（集合）<br>Sorted Set（有序集合）</p>
+</blockquote>
+<p>下面就分别介绍这五种数据类型及其相应的操作命令。<br><a id="more"></a></p>
+<h4 id="1-String（字符串）"><a href="#1-String（字符串）" class="headerlink" title="1.String（字符串）"></a>1.String（字符串）</h4><p>String是简单的 key-value 键值对，value 不仅可以是 String，也可以是数字。String在redis内部存储默认就是一个字符串，被redisObject所引用，当遇到incr,decr等操作时会转成数值型进行计算，此时redisObject的encoding字段为int。</p>
+<p>String在redis内部存储默认就是一个字符串，被redisObject所引用，当遇到incr,decr等操作时会转成数值型进行计算，此时redisObject的encoding字段为int。</p>
+<p>应用场景</p>
+<blockquote>
+<p>String是最常用的一种数据类型，普通的key/value存储都可以归为此类，这里就不所做解释了。</p>
+</blockquote>
+<p>相关命令:  </p>
+<blockquote>
+<p>SET key value　　　　　　　　　　设置key=value<br>GET key　　　　　　　　　　　　　或者键key对应的值<br>GETRANGE key start end　　　　　得到字符串的子字符串存放在一个键<br>GETSET key value　　　　　　　　设置键的字符串值，并返回旧值<br>GETBIT key offset　　　　　　　　返回存储在键位值的字符串值的偏移<br>MGET key1 [key2..]　　　　　　　得到所有的给定键的值<br>SETBIT key offset value　　　　　设置或清除该位在存储在键的字符串值偏移<br>SETEX key seconds value　　　　　键到期时设置值<br>SETNX key value　　　　　　　　　设置键的值，只有当该键不存在<br>SETRANGE key offset value　　　　覆盖字符串的一部分从指定键的偏移<br>STRLEN key　　　　　　　　　　　得到存储在键的值的长度<br>MSET key value [key value…]　　　设置多个键和多个值<br>MSETNX key value [key value…]　　设置多个键多个值，只有在当没有按键的存在时<br>PSETEX key milliseconds value　　设置键的毫秒值和到期时间<br>INCR key　　　　　　　　　　　　增加键的整数值一次<br>INCRBY key increment　　　　　　由给定的数量递增键的整数值<br>INCRBYFLOAT key increment　　　由给定的数量递增键的浮点值<br>DECR key　　　　　　　　　　　　递减键一次的整数值<br>DECRBY key decrement　　　　　　由给定数目递减键的整数值<br>APPEND key value　　　　　　　　追加值到一个键</p>
+</blockquote>
+<p>其中用于操作管理键的命令有：</p>
+<blockquote>
+<p>DEL key　　　　　　　　　　　　　如果存在删除键<br>DUMP key　　　　　　　　　　　　返回存储在指定键的值的序列化版本<br>EXISTS key　　　　　　　　　　　此命令检查该键是否存在<br>EXPIRE key seconds　　　　　　　指定键的过期时间<br>EXPIREAT key timestamp　　　　指定的键过期时间。在这里，时间是在Unix时间戳格式<br>PEXPIRE key milliseconds　　　　设置键以毫秒为单位到期<br>PEXPIREAT key milliseconds-timestamp　　设置键在Unix时间戳指定为毫秒到期<br>KEYS pattern　　　　　　　　　　查找与指定模式匹配的所有键<br>MOVE key db　　　　　　　　　　移动键到另一个数据库<br>PERSIST key　　　　　　　　　　移除过期的键<br>PTTL key　　　　　　　　　　　　以毫秒为单位获取剩余时间的到期键<br>TTL key　　　　　　　　　　　　　获取键到期的剩余时间<br>RANDOMKEY　　　　　　　　　　从Redis返回随机键<br>RENAME key newkey　　　　　　　更改键的名称<br>RENAMENX key newkey　　　　　重命名键，如果新的键不存在<br>TYPE key 　　　　　　　　　　　　返回存储在键的数据类型的值</p>
+</blockquote>
+<p>使用示例</p>
+<blockquote>
+<p>redis 127.0.0.1:6379&gt; set baidu<br>OK<br>redis 127.0.0.1:6379&gt; append baidu .com<br>(integer) 20<br>redis 127.0.0.1:6379&gt; get baidu<br>“<a href="http://www.baidu.com“" target="_blank" rel="noopener">http://www.baidu.com“</a><br>redis 127.0.0.1:6379&gt; set visitors 0<br>OK<br>redis 127.0.0.1:6379&gt; incr visitors<br>(integer) 1<br>redis 127.0.0.1:6379&gt; incr visitors<br>(integer) 2<br>redis 127.0.0.1:6379&gt; get visitors<br>“2”<br>redis 127.0.0.1:6379&gt; incrby visitors 100<br>(integer) 102<br>redis 127.0.0.1:6379&gt; get visitors<br>“102”<br>redis 127.0.0.1:6379&gt; type baidu<br>string<br>redis 127.0.0.1:6379&gt; type visitors<br>string<br>redis 127.0.0.1:6379&gt; ttl baidu<br>(integer) -1<br>redis 127.0.0.1:6379&gt; rename baidu baidu-site<br>OK<br>redis 127.0.0.1:6379&gt; get baidu<br>(nil)<br>redis 127.0.0.1:6379&gt; get baidu-site<br>“<a href="http://www.baidu.com“" target="_blank" rel="noopener">http://www.baidu.com“</a></p>
+</blockquote>
+<h4 id="2-List（列表）"><a href="#2-List（列表）" class="headerlink" title="2.List（列表）"></a>2.List（列表）</h4><p>Redis列表是简单的字符串列表，可以类比到C++中的std::list，简单的说就是一个链表或者说是一个队列。可以从头部或尾部向Redis列表添加元素。列表的最大长度为2^32 - 1，也即每个列表支持超过40亿个元素。</p>
+<p>Redis list的实现为一个双向链表，即可以支持反向查找和遍历，更方便操作，不过带来了部分额外的内存开销，Redis内部的很多实现，包括发送缓冲队列等也都是用的这个数据结构。</p>
+<p>应用场景</p>
+<blockquote>
+<p>Redis list的应用场景非常多，也是Redis最重要的数据结构之一，比如twitter的关注列表、粉丝列表等都可以用Redis的list结构来实现，再比如有的应用使用Redis的list类型实现一个简单的轻量级消息队列，生产者push，消费者pop/bpop。</p>
+</blockquote>
+<p>相关命令</p>
+<p>BLPOP  </p>
+<blockquote>
+<p>BLPOP key1 [key2 ] timeout 取出并获取列表中的第一个元素，或阻塞，直到有可用</p>
+</blockquote>
+<p>BRPOP  </p>
+<blockquote>
+<p>BRPOP key1 [key2 ] timeout 取出并获取列表中的最后一个元素，或阻塞，直到有可用</p>
+</blockquote>
+<p>BRPOPLPUSH  </p>
+<blockquote>
+<p>BRPOPLPUSH source destination timeout 从列表中弹出一个值，它推到另一个列表并返回它;或阻塞，直到有可用</p>
+</blockquote>
+<p>LINDEX  </p>
+<blockquote>
+<p>LINDEX key index 从一个列表其索引获取对应的元素</p>
+</blockquote>
+<p>LINSERT</p>
+<blockquote>
+<p>LINSERT key BEFORE|AFTER pivot value 在列表中的其他元素之后或之前插入一个元素</p>
+</blockquote>
+<p>LLEN</p>
+<blockquote>
+<p>LLEN key 获取列表的长度</p>
+</blockquote>
+<p>LPOP</p>
+<blockquote>
+<p>LPOP key 获取并取出列表中的第一个元素</p>
+</blockquote>
+<p>LPUSH</p>
+<blockquote>
+<p>LPUSH key value1 [value2] 在前面加上一个或多个值的列表</p>
+</blockquote>
+<p>LPUSHX</p>
+<blockquote>
+<p>LPUSHX key value 在前面加上一个值列表，仅当列表中存在</p>
+</blockquote>
+<p>LRANGE</p>
+<blockquote>
+<p>LRANGE key start stop 从一个列表获取各种元素</p>
+</blockquote>
+<p>LREM</p>
+<blockquote>
+<p>LREM key count value 从列表中删除元素</p>
+</blockquote>
+<p>LSET</p>
+<blockquote>
+<p>LSET key index value 在列表中的索引设置一个元素的值</p>
+</blockquote>
+<p>LTRIM</p>
+<blockquote>
+<p>LTRIM key start stop 修剪列表到指定的范围内</p>
+</blockquote>
+<p>RPOP</p>
+<blockquote>
+<p>RPOP key 取出并获取列表中的最后一个元素</p>
+</blockquote>
+<p>RPOPLPUSH</p>
+<blockquote>
+<p>RPOPLPUSH source destination 删除最后一个元素的列表，将其附加到另一个列表并返回它</p>
+</blockquote>
+<p>RPUSH</p>
+<blockquote>
+<p>RPUSH key value1 [value2] 添加一个或多个值到列表</p>
+</blockquote>
+<p>RPUSHX</p>
+<blockquote>
+<p>RPUSHX key value 添加一个值列表，仅当列表中存在</p>
+</blockquote>
+<p>使用示例</p>
+<blockquote>
+<p>redis 127.0.0.1:6379&gt; lpush list1 redis<br>(integer) 1<br>redis 127.0.0.1:6379&gt; lpush list1 hello<br>(integer) 2<br>redis 127.0.0.1:6379&gt; rpush list1 world<br>(integer) 3<br>redis 127.0.0.1:6379&gt; llen list1<br>(integer) 3<br>redis 127.0.0.1:6379&gt; lrange list1 0 3<br>1) “hello”<br>2) “redis”<br>3) “world”<br>redis 127.0.0.1:6379&gt; lpop list1<br>“hello”<br>redis 127.0.0.1:6379&gt; rpop list1<br>“world”<br>redis 127.0.0.1:6379&gt; lrange list1 0 3<br>1) “redis”</p>
+</blockquote>
+<h4 id="3-Hash（字典，哈希表）"><a href="#3-Hash（字典，哈希表）" class="headerlink" title="3.Hash（字典，哈希表）"></a>3.Hash（字典，哈希表）</h4><p>类似C#中的dict类型或者C++中的hash_map类型。</p>
+<p>Redis Hash对应Value内部实际就是一个HashMap，实际这里会有2种不同实现，这个Hash的成员比较少时Redis为了节省内存会采用类似一维数组的方式来紧凑存储，而不会采用真正的HashMap结构，对应的value redisObject的encoding为zipmap,当成员数量增大时会自动转成真正的HashMap,此时encoding为ht。</p>
+<p>应用场景</p>
+<blockquote>
+<p>假设有多个用户及对应的用户信息，可以用来存储以用户ID为key，将用户信息序列化为比如json格式做为value进行保存。</p>
+</blockquote>
+<p>相关命令</p>
+<p>HDEL</p>
+<blockquote>
+<p>HDEL key field[field…] 删除对象的一个或几个属性域，不存在的属性将被忽略</p>
+</blockquote>
+<p>HEXISTS  </p>
+<blockquote>
+<p>HEXISTS key field 查看对象是否存在该属性域</p>
+</blockquote>
+<p>HGET  </p>
+<blockquote>
+<p>HGET key field 获取对象中该field属性域的值</p>
+</blockquote>
+<p>HGETALL  </p>
+<blockquote>
+<p>HGETALL key 获取对象的所有属性域和值</p>
+</blockquote>
+<p>HINCRBY</p>
+<blockquote>
+<p>HINCRBY key field value 将该对象中指定域的值增加给定的value，原子自增操作，只能是integer的属性值可以使用</p>
+</blockquote>
+<p>HINCRBYFLOAT</p>
+<blockquote>
+<p>HINCRBYFLOAT key field increment 将该对象中指定域的值增加给定的浮点数</p>
+</blockquote>
+<p>HKEYS</p>
+<blockquote>
+<p>HKEYS key 获取对象的所有属性字段</p>
+</blockquote>
+<p>HVALS</p>
+<blockquote>
+<p>HVALS key 获取对象的所有属性值</p>
+</blockquote>
+<p>HLEN</p>
+<blockquote>
+<p>HLEN key 获取对象的所有属性字段的总数</p>
+</blockquote>
+<p>HMGET</p>
+<blockquote>
+<p>HMGET key field[field…] 获取对象的一个或多个指定字段的值</p>
+</blockquote>
+<p>HSET</p>
+<blockquote>
+<p>HSET key field value 设置对象指定字段的值</p>
+</blockquote>
+<p>HMSET</p>
+<blockquote>
+<p>HMSET key field value [field value …] 同时设置对象中一个或多个字段的值</p>
+</blockquote>
+<p>HSETNX</p>
+<blockquote>
+<p>HSETNX key field value 只在对象不存在指定的字段时才设置字段的值</p>
+</blockquote>
+<p>HSTRLEN</p>
+<blockquote>
+<p>HSTRLEN key field 返回对象指定field的value的字符串长度，如果该对象或者field不存在，返回0.</p>
+</blockquote>
+<p>HSCAN</p>
+<blockquote>
+<p>HSCAN key cursor [MATCH pattern] [COUNT count] 类似SCAN命令</p>
+</blockquote>
+<p>使用示例</p>
+<blockquote>
+<p>127.0.0.1:6379&gt; hset person name jack<br>(integer) 1<br>127.0.0.1:6379&gt; hset person age 20<br>(integer) 1<br>127.0.0.1:6379&gt; hset person sex famale<br>(integer) 1<br>127.0.0.1:6379&gt; hgetall person<br>1) “name”<br>2) “jack”<br>3) “age”<br>4) “20”<br>5) “sex”<br>6) “famale”<br>127.0.0.1:6379&gt; hkeys person<br>1) “name”<br>2) “age”<br>3) “sex”<br>127.0.0.1:6379&gt; hvals person<br>1) “jack”<br>2) “20”<br>3) “famale”</p>
+</blockquote>
+<h4 id="4-Set（集合）"><a href="#4-Set（集合）" class="headerlink" title="4.Set（集合）"></a>4.Set（集合）</h4><p>可以理解为一堆值不重复的列表，类似数学领域中的集合概念，且Redis也提供了针对集合的求交集、并集、差集等操作。</p>
+<p>set 的内部实现是一个 value永远为null的HashMap，实际就是通过计算hash的方式来快速排重的，这也是set能提供判断一个成员是否在集合内的原因。</p>
+<p>应用场景</p>
+<blockquote>
+<p>Redis set对外提供的功能与list类似是一个列表的功能，特殊之处在于set是可以自动排重的，当你需要存储一个列表数据，又不希望出现重复数据时，set是一个很好的选择，并且set提供了判断某个成员是否在一个set集合内的重要接口，这个也是list所不能提供的。<br>又或者在微博应用中，每个用户关注的人存在一个集合中，就很容易实现求两个人的共同好友功能。</p>
+</blockquote>
+<p>相关命令</p>
+<p>SADD</p>
+<blockquote>
+<p>SADD key member [member …] 添加一个或者多个元素到集合(set)里</p>
+</blockquote>
+<p>SACRD</p>
+<blockquote>
+<p>SCARD key 获取集合里面的元素数量</p>
+</blockquote>
+<p>SDIFF</p>
+<blockquote>
+<p>SDIFF key [key …] 获得队列不存在的元素</p>
+</blockquote>
+<p>SDIFFSTORE</p>
+<blockquote>
+<p>SDIFFSTORE destination key [key …] 获得队列不存在的元素，并存储在一个关键的结果集</p>
+</blockquote>
+<p>SINTER</p>
+<blockquote>
+<p>SINTER key [key …] 获得两个集合的交集</p>
+</blockquote>
+<p>SINTERSTORE</p>
+<blockquote>
+<p>SINTERSTORE destination key [key …] 获得两个集合的交集，并存储在一个集合中</p>
+</blockquote>
+<p>SISMEMBER</p>
+<blockquote>
+<p>SISMEMBER key member 确定一个给定的值是一个集合的成员</p>
+</blockquote>
+<p>SMEMBERS</p>
+<blockquote>
+<p>SMEMBERS key 获取集合里面的所有key</p>
+</blockquote>
+<p>SMOVE</p>
+<blockquote>
+<p>SMOVE source destination member 移动集合里面的一个key到另一个集合</p>
+</blockquote>
+<p>SPOP</p>
+<blockquote>
+<p>SPOP key [count] 获取并删除一个集合里面的元素</p>
+</blockquote>
+<p>SRANDMEMBER</p>
+<blockquote>
+<p>SRANDMEMBER key [count] 从集合里面随机获取一个元素</p>
+</blockquote>
+<p>SREM</p>
+<blockquote>
+<p>SREM key member [member …] 从集合里删除一个或多个元素，不存在的元素会被忽略</p>
+</blockquote>
+<p>SUNION</p>
+<blockquote>
+<p>SUNION key [key …] 添加多个set元素</p>
+</blockquote>
+<p>SUNIONSTORE</p>
+<blockquote>
+<p>SUNIONSTORE destination key [key …] 合并set元素，并将结果存入新的set里面</p>
+</blockquote>
+<p>SSCAN</p>
+<blockquote>
+<p>SSCAN key cursor [MATCH pattern] [COUNT count] 迭代set里面的元素</p>
+</blockquote>
+<p>使用示例</p>
+<blockquote>
+<p>redis&gt; SADD myset “Hello”<br>(integer) 1<br>redis&gt; SADD myset “World”<br>(integer) 1<br>redis&gt; SMEMBERS myset<br>1) “World”<br>2) “Hello”<br>redis&gt; SADD myset “one”<br>(integer) 1<br>redis&gt; SISMEMBER myset “one”<br>(integer) 1<br>redis&gt; SISMEMBER myset “two”<br>(integer) 0<br>使用集合数据结构的典型用例是朋友名单的实现：<br>redis 127.0.0.1:6379&gt; sadd friends:leto ghanima paul chani jessica<br>(integer) 4<br>redis 127.0.0.1:6379&gt; sadd friends:duncan paul jessica alia<br>(integer) 3<br>redis 127.0.0.1:6379&gt; sismember friends:leto jessica<br>(integer) 1   #不管一个用户有多少个朋友，我们都能高效地（O(1)时间复杂度）识别出用户X是不是用户Y的朋友<br>redis 127.0.0.1:6379&gt; sismember friends:leto vladimir<br>(integer) 0<br>redis 127.0.0.1:6379&gt; sinter friends:leto friends:duncan    #我们可以查看两个或更多的人是不是有共同的朋友<br>1) “paul”<br>2) “jessica”<br>redis 127.0.0.1:6379&gt; sinterstore friends:leto_duncan friends:leto friends:duncan # 可以在一个新的关键字里存储结果<br>(integer) 2</p>
+</blockquote>
+<h4 id="5-Sorted-Set（有序集合）"><a href="#5-Sorted-Set（有序集合）" class="headerlink" title="5.Sorted Set（有序集合）"></a>5.Sorted Set（有序集合）</h4><p>Redis有序集合类似Redis集合，不同的是增加了一个功能，即集合是有序的。一个有序集合的每个成员带有分数，用于进行排序。</p>
+<p>Redis有序集合添加、删除和测试的时间复杂度均为O(1)(固定时间，无论里面包含的元素集合的数量)。列表的最大长度为2^32- 1元素(4294967295，超过40亿每个元素的集合)。<br>R<br>edis sorted set的内部使用HashMap和跳跃表(SkipList)来保证数据的存储和有序，HashMap里放的是成员到score的映射，而跳跃表里存放的是所有的成员，排序依据是HashMap里存的score,使用跳跃表的结构可以获得比较高的查找效率，并且在实现上比较简单。</p>
+<p>使用场景</p>
+<blockquote>
+<p>Redis sorted set的使用场景与set类似，区别是set不是自动有序的，而sorted set可以通过用户额外提供一个优先级(score)的参数来为成员排序，并且是插入有序的，即自动排序。当你需要一个有序的并且不重复的集合列表，那么可以选择sorted set数据结构，比如twitter 的public timeline可以以发表时间作为score来存储，这样获取时就是自动按时间排好序的。<br>又比如用户的积分排行榜需求就可以通过有序集合实现。还有上面介绍的使用List实现轻量级的消息队列，其实也可以通过Sorted Set实现有优先级或按权重的队列。</p>
+</blockquote>
+<p>相关命令</p>
+<p>ZADD</p>
+<blockquote>
+<p>ZADD key score1 member1 [score2 member2] 添加一个或多个成员到有序集合，或者如果它已经存在更新其分数</p>
+</blockquote>
+<p>ZCARD</p>
+<blockquote>
+<p>ZCARD key 得到的有序集合成员的数量</p>
+</blockquote>
+<p>ZCOUNT</p>
+<blockquote>
+<p>ZCOUNT key min max 计算一个有序集合成员与给定值范围内的分数</p>
+</blockquote>
+<p>ZINCRBY</p>
+<blockquote>
+<p>ZINCRBY key increment member 在有序集合增加成员的分数</p>
+</blockquote>
+<p>ZINTERSTORE</p>
+<blockquote>
+<p>ZINTERSTORE destination numkeys key [key …] 多重交叉排序集合，并存储生成一个新的键有序集合。</p>
+</blockquote>
+<p>ZLEXCOUNT</p>
+<blockquote>
+<p>ZLEXCOUNT key min max 计算一个给定的字典范围之间的有序集合成员的数量</p>
+</blockquote>
+<p>ZRANGE</p>
+<blockquote>
+<p>ZRANGE key start stop [WITHSCORES] 由索引返回一个成员范围的有序集合（从低到高）</p>
+</blockquote>
+<p>ZRANGEBYLEX</p>
+<blockquote>
+<p>ZRANGEBYLEX key min max [LIMIT offset count]返回一个成员范围的有序集合（由字典范围）</p>
+</blockquote>
+<p>ZRANGEBYSCORE</p>
+<blockquote>
+<p>ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT] 返回有序集key中，所有 score 值介于 min 和 max 之间(包括等于 min 或 max )的成员，有序集成员按 score 值递增(从小到大)次序排列</p>
+</blockquote>
+<p>ZRANK</p>
+<blockquote>
+<p>ZRANK key member 确定成员的索引中有序集合</p>
+</blockquote>
+<p>ZREM</p>
+<blockquote>
+<p>ZREM key member [member …] 从有序集合中删除一个或多个成员，不存在的成员将被忽略</p>
+</blockquote>
+<p>ZREMRANGEBYLEX</p>
+<blockquote>
+<p>ZREMRANGEBYLEX key min max 删除所有成员在给定的字典范围之间的有序集合</p>
+</blockquote>
+<p>ZREMRANGEBYRANK</p>
+<blockquote>
+<p>ZREMRANGEBYRANK key start stop 在给定的索引之内删除所有成员的有序集合</p>
+</blockquote>
+<p>ZREMRANGEBYSCORE</p>
+<blockquote>
+<p>ZREMRANGEBYSCORE key min max 在给定的分数之内删除所有成员的有序集合</p>
+</blockquote>
+<p>ZREVRANGE</p>
+<blockquote>
+<p>ZREVRANGE key start stop [WITHSCORES] 返回一个成员范围的有序集合，通过索引，以分数排序，从高分到低分</p>
+</blockquote>
+<p>ZREVRANGEBYSCORE</p>
+<blockquote>
+<p>ZREVRANGEBYSCORE key max min [WITHSCORES] 返回一个成员范围的有序集合，以socre排序从高到低</p>
+</blockquote>
+<p>ZREVRANK</p>
+<blockquote>
+<p>ZREVRANK key member 确定一个有序集合成员的索引，以分数排序，从高分到低分</p>
+</blockquote>
+<p>ZSCORE</p>
+<blockquote>
+<p>ZSCORE key member 获取给定成员相关联的分数在一个有序集合</p>
+</blockquote>
+<p>ZUNIONSTORE</p>
+<blockquote>
+<p>ZUNIONSTORE destination numkeys key [key …] 添加多个集排序，所得排序集合存储在一个新的键</p>
+</blockquote>
+<p>ZSCAN</p>
+<blockquote>
+<p>ZSCAN key cursor [MATCH pattern] [COUNT count] 增量迭代排序元素集和相关的分数</p>
+</blockquote>
+<p>使用示例</p>
+<blockquote>
+<p>redis 127.0.0.1:6379&gt; zadd dbs 100 redis<br>(integer) 1<br>redis 127.0.0.1:6379&gt; zadd dbs 98 memcached<br>(integer) 1<br>redis 127.0.0.1:6379&gt; zadd dbs 99 mongodb<br>(integer) 1<br>redis 127.0.0.1:6379&gt; zadd dbs 99 leveldb<br>(integer) 1<br>redis 127.0.0.1:6379&gt; zcard dbs<br>(integer) 4<br>redis 127.0.0.1:6379&gt; zcount dbs 10 99<br>(integer) 3<br>redis 127.0.0.1:6379&gt; zrank dbs leveldb<br>(integer) 1<br>redis 127.0.0.1:6379&gt; zrank dbs other<br>(nil)<br>redis 127.0.0.1:6379&gt; zrangebyscore dbs 98 100<br>1) “memcached”<br>2) “leveldb”<br>3) “mongodb”<br>4) “redis”</p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/14/http协议详解3/" rel="next" title="http协议详解3">
+                <i class="fa fa-chevron-left"></i> http协议详解3
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/11/Redis-2/" rel="prev" title="Redis实例探讨">
+                Redis实例探讨 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-String（字符串）"><span class="nav-number">1.</span> <span class="nav-text">1.String（字符串）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-List（列表）"><span class="nav-number">2.</span> <span class="nav-text">2.List（列表）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Hash（字典，哈希表）"><span class="nav-number">3.</span> <span class="nav-text">3.Hash（字典，哈希表）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-Set（集合）"><span class="nav-number">4.</span> <span class="nav-text">4.Set（集合）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-Sorted-Set（有序集合）"><span class="nav-number">5.</span> <span class="nav-text">5.Sorted Set（有序集合）</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

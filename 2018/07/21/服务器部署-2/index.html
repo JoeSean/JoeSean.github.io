@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="PHP," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="源码安装php7.2选择需要的php版本从 php官网： http://cn2.php.net/downloads.php 选择需要的php版本，选择.tar.gz 的下载包，点击进入，选择中国的本地语言包，复制这个下载地址">
+<meta name="keywords" content="PHP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解">
+<meta property="og:url" content="http://yoursite.com/2018/07/21/服务器部署-2/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="源码安装php7.2选择需要的php版本从 php官网： http://cn2.php.net/downloads.php 选择需要的php版本，选择.tar.gz 的下载包，点击进入，选择中国的本地语言包，复制这个下载地址">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/07/21/服务器部署-2/1.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/21/服务器部署-2/3.jpg">
+<meta property="og:updated_time" content="2019-04-15T01:59:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解">
+<meta name="twitter:description" content="源码安装php7.2选择需要的php版本从 php官网： http://cn2.php.net/downloads.php 选择需要的php版本，选择.tar.gz 的下载包，点击进入，选择中国的本地语言包，复制这个下载地址">
+<meta name="twitter:image" content="http://yoursite.com/2018/07/21/服务器部署-2/1.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/21/服务器部署-2/"/>
+
+
+
+
+
+  <title>服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解 | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/21/服务器部署-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-21T02:12:26-04:00">
+                2018-07-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="源码安装php7-2"><a href="#源码安装php7-2" class="headerlink" title="源码安装php7.2"></a>源码安装php7.2</h3><h4 id="选择需要的php版本"><a href="#选择需要的php版本" class="headerlink" title="选择需要的php版本"></a>选择需要的php版本</h4><p>从 php官网： <a href="http://cn2.php.net/downloads.php" target="_blank" rel="noopener">http://cn2.php.net/downloads.php</a> 选择需要的php版本，选择.tar.gz 的下载包，点击进入，选择中国的本地语言包，复制这个下载地址<br><img src="/2018/07/21/服务器部署-2/1.jpg" alt="p1"><br><a id="more"></a><br>选择地区镜像下载<br><img src="/2018/07/21/服务器部署-2/3.jpg" alt="p2"><br>地址：<a href="http://cn2.php.net/get/php-7.2.8.tar.gz/from/this/mirror" target="_blank" rel="noopener">http://cn2.php.net/get/php-7.2.8.tar.gz/from/this/mirror</a></p>
+<h4 id="下载php源码"><a href="#下载php源码" class="headerlink" title="下载php源码"></a>下载php源码</h4><ul>
+<li>选择一个位置存放文件<br>cd /usr/src/</li>
+<li>下载刚刚选好的php压缩包<br>wget <a href="http://cn2.php.net/get/php-7.2.8.tar.gz/from/this/mirror" target="_blank" rel="noopener">http://cn2.php.net/get/php-7.2.8.tar.gz/from/this/mirror</a><br>但是我们下载下来看到并不是我们要的php-7.2.8.tar.gz 类似的压缩文件，而是一个mirror的文件，很简单，我们给文件重命名就可以了<br>mv mirror php-7.2.8.tar.gz </li>
+<li>安装php所需要的依赖</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">yum install gcc</span><br><span class="line">yum install libxml2</span><br><span class="line">yum install libxml2-devel</span><br><span class="line">yum install openssl openssl-devel</span><br><span class="line">yum -y install curl-devel</span><br><span class="line">yum install libjpeg.x86_64 libpng.x86_64 freetype.x86_64 libjpeg-devel.x86_64 libpng-devel.x86_64 freetype-devel.x86_64 -y</span><br><span class="line">yum install bzip2-devel.x86_64 -y</span><br><span class="line">yum install libXpm-devel</span><br><span class="line">yum install gmp-devel</span><br><span class="line">yum install -y icu libicu libicu-devel</span><br><span class="line">yum  install  php-mcrypt  libmcrypt  libmcrypt-devel</span><br><span class="line">yum install  postgresql-devel</span><br><span class="line">yum install libxslt-devel</span><br></pre></td></tr></table></figure>
+<ul>
+<li>解压编译 </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tar -xzxvf php-7.2.0.tar.gz  </span><br><span class="line"> cd php-7.2.0  </span><br><span class="line"> 设置编译需要加载的模块  </span><br><span class="line"> ./configure --prefix=/usr/local/php --with-pdo-pgsql --with-zlib-dir --with-freetype-dir --enable-mbstring --with-libxml-dir=/usr --enable-soap --enable-calendar --with-curl --with-mcrypt --with-gd --with-pgsql --disable-rpath --enable-inline-optimization --with-bz2 --with-zlib --enable-sockets --enable-sysvsem --enable-sysvshm --enable-pcntl --enable-mbregex --enable-exif --enable-bcmath --with-mhash --enable-zip --with-pcre-regex --with-pdo-mysql --with-mysqli --with-jpeg-dir=/usr --with-png-dir=/usr --enable-gd-native-ttf --with-openssl --with-fpm-user=www-data --with-fpm-group=www-data --with-libdir=/lib/x86_64-linux-gnu/--enable-ftp --with-gettext --with-xmlrpc --with-xsl --enable-opcache --enable-fpm --with-iconv --with-xpm-dir=/usr  </span><br><span class="line"> 编译： </span><br><span class="line"> make clean &amp;&amp; make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<ul>
+<li>复制配置文件 </li>
+</ul>
+<blockquote>
+<p>cp php.ini-development /usr/local/php/lib/php.ini  </p>
+</blockquote>
+<ul>
+<li>设置全局的php命令</li>
+</ul>
+<blockquote>
+<p>设置软连接即可<br>ln -s /usr/local/php/bin /usr/local/bin</p>
+</blockquote>
+<p>可以通过php -v 查看php版本信息或者php -m 看看刚刚编译加载的模块了</p>
+<h3 id="PHP-FPM"><a href="#PHP-FPM" class="headerlink" title="PHP-FPM"></a>PHP-FPM</h3><p>PHP-FPM（PHP FastCGI Process Manager），是用于管理 PHP 进程池的软件，用于接收和处理来自 Web 服务器（如Nginx）的请求。PHP-FPM会创建一个主进程（通常以操作系统中根用户的身份运行），控制何时以及如何把 HTTP 请求转发给一个或多个子进程处理。PHP-FPM 主进程还控制着什么时候创建和销毁 PHP 子进程。PHP-FPM 进程池中的每个进程存在的时间都比单个 HTTP 请求长，可以处理10、50、100或更多的 HTTP 请求。</p>
+<h4 id="配置PHP-fpm"><a href="#配置PHP-fpm" class="headerlink" title="配置PHP-fpm"></a>配置PHP-fpm</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf  </span><br><span class="line">cp /usr/local/php/etc/php-fpm.d/www.conf.default /usr/local/php/etc/php-fpm.d/www.conf  </span><br><span class="line">cp /usr/src/php-7.2.8/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm  </span><br><span class="line">chmod +x /etc/init.d/php-fpm</span><br></pre></td></tr></table></figure>
+<p>新建www-data 用户组：</p>
+<blockquote>
+<p>groupadd www-data<br>useradd -g www-data www-data  </p>
+</blockquote>
+<p>启动php-fpm </p>
+<blockquote>
+<p>/etc/init.d/php-fpm start </p>
+</blockquote>
+<p>(可选)配置php-fpm自启动，如果存在这个文件，这步省略<br>创建php-fpm启动脚本  </p>
+<blockquote>
+<p>vim /etc/init.d/php-fpm</p>
+</blockquote>
+<p>插入如下内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh  </span><br><span class="line"># chkconfig:   2345 15 95</span><br><span class="line"></span><br><span class="line"># description:  PHP-FPM (FastCGI Process Manager) is an alternative PHP FastCGI implementation \</span><br><span class="line"></span><br><span class="line"># with some additional features useful for sites of any size, especially busier sites.</span><br><span class="line"># DateTime: 2016-09-20</span><br><span class="line"></span><br><span class="line"># Source function library.  </span><br><span class="line">. /etc/rc.d/init.d/functions  </span><br><span class="line"></span><br><span class="line"># Source networking configuration.  </span><br><span class="line">. /etc/sysconfig/network  </span><br><span class="line"></span><br><span class="line"># Check that networking is up.  </span><br><span class="line">[ &quot;$NETWORKING&quot; = &quot;no&quot; ] &amp;&amp; exit 0  </span><br><span class="line"></span><br><span class="line">phpfpm=&quot;/usr/local/php/sbin/php-fpm&quot;  </span><br><span class="line">prog=$(basename $&#123;phpfpm&#125;)  </span><br><span class="line"></span><br><span class="line">lockfile=/var/lock/subsys/phpfpm</span><br><span class="line"></span><br><span class="line">start() &#123;  </span><br><span class="line">    [ -x $&#123;phpfpm&#125; ] || exit 5  </span><br><span class="line">    echo -n $&quot;Starting $prog: &quot;  </span><br><span class="line">    daemon $&#123;phpfpm&#125;</span><br><span class="line">    retval=$?  </span><br><span class="line">    echo  </span><br><span class="line">    [ $retval -eq 0 ] &amp;&amp; touch $lockfile  </span><br><span class="line">    return $retval  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">stop() &#123;  </span><br><span class="line">    echo -n $&quot;Stopping $prog: &quot;  </span><br><span class="line">    killproc $prog -QUIT  </span><br><span class="line">    retval=$?  </span><br><span class="line">    echo  </span><br><span class="line">    [ $retval -eq 0 ] &amp;&amp; rm -f $lockfile  </span><br><span class="line">    return $retval  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">restart() &#123;  </span><br><span class="line">    configtest || return $?  </span><br><span class="line">    stop  </span><br><span class="line">    start  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">reload() &#123;  </span><br><span class="line">    configtest || return $?  </span><br><span class="line">    echo -n $&quot;Reloading $prog: &quot;  </span><br><span class="line">    killproc $&#123;phpfpm&#125; -HUP  </span><br><span class="line">    RETVAL=$?  </span><br><span class="line">    echo  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">force_reload() &#123;  </span><br><span class="line">    restart  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">configtest() &#123;  </span><br><span class="line">  $&#123;phpfpm&#125; -t</span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">rh_status() &#123;  </span><br><span class="line">    status $prog  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">rh_status_q() &#123;  </span><br><span class="line">    rh_status &gt;/dev/null 2&gt;&amp;1  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">case &quot;$1&quot; in  </span><br><span class="line">    start)  </span><br><span class="line">        rh_status_q &amp;&amp; exit 0  </span><br><span class="line">        $1  </span><br><span class="line">        ;;  </span><br><span class="line">    stop)  </span><br><span class="line">        rh_status_q || exit 0  </span><br><span class="line">        $1  </span><br><span class="line">        ;;  </span><br><span class="line">    restart|configtest)  </span><br><span class="line">        $1  </span><br><span class="line">        ;;  </span><br><span class="line">    reload)  </span><br><span class="line">        rh_status_q || exit 7  </span><br><span class="line">        $1  </span><br><span class="line">        ;;  </span><br><span class="line">    status)  </span><br><span class="line">        rh_status  </span><br><span class="line">        ;;  </span><br><span class="line">    *)  </span><br><span class="line">        echo $&quot;Usage: $0 &#123;start|stop|status|restart|reload|configtest&#125;&quot;  </span><br><span class="line">        exit 2  </span><br><span class="line">esac</span><br></pre></td></tr></table></figure></p>
+<p>添加到开机启动项   </p>
+<blockquote>
+<p>chkconfig –add php-fpm</p>
+</blockquote>
+<p>此时也可以使用service来启动php-fpm了</p>
+<blockquote>
+<p>service php-fpm start<br>service php-fpm stop</p>
+</blockquote>
+<h3 id="yum安装nginx"><a href="#yum安装nginx" class="headerlink" title="yum安装nginx"></a>yum安装nginx</h3><h4 id="执行yum安装命令"><a href="#执行yum安装命令" class="headerlink" title="执行yum安装命令"></a>执行yum安装命令</h4><blockquote>
+<p>yum install nginx </p>
+</blockquote>
+<h4 id="修改配置文件已支持php"><a href="#修改配置文件已支持php" class="headerlink" title="修改配置文件已支持php"></a>修改配置文件已支持php</h4><blockquote>
+<p>cd /etc/nginx/ </p>
+</blockquote>
+<p>删掉原本的nginx.conf，复制一份nginx.conf.default的默认配置</p>
+<blockquote>
+<p>rm -rf nginx.conf<br> cp nginx.conf.default nginx.conf<br> vim nginx.conf  </p>
+</blockquote>
+<p>server里面的配置：<br>在location / 的中index增加index.php ，增加URL重写读取;<br>解开location ~ .php$的注释，修改fastcgi的路径，最终server部分配置内容为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">         listen       80;</span><br><span class="line">         server_name  localhost;</span><br><span class="line"></span><br><span class="line">        #charset koi8-r;</span><br><span class="line"></span><br><span class="line">          #access_log  logs/host.access.log  main;</span><br><span class="line"></span><br><span class="line">          location / &#123;</span><br><span class="line">              root   html;</span><br><span class="line">              # 修改1：这里新增了index.php</span><br><span class="line">              index index.html index.htm index.php;</span><br><span class="line">              # 修改2：这里新增url重写（path）</span><br><span class="line">              try_files $uri $uri/ /index.php$is_args$args;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          #error_page  404              /404.html;</span><br><span class="line"></span><br><span class="line">          # redirect server error pages to the static page /50x.html</span><br><span class="line">          #</span><br><span class="line">          error_page   500 502 503 504  /50x.html;</span><br><span class="line">          location = /50x.html &#123;</span><br><span class="line"></span><br><span class="line">             root   html;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          # proxy the PHP scripts to Apache listening on 127.0.0.1:80</span><br><span class="line">          #</span><br><span class="line">          #location ~ \.php$ &#123;</span><br><span class="line">          #    proxy_pass   http://127.0.0.1;</span><br><span class="line">          #&#125;</span><br><span class="line"></span><br><span class="line">          # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000</span><br><span class="line">          #</span><br><span class="line">    #修改3：解开php支持的注释</span><br><span class="line">          location ~ \.php$ &#123;</span><br><span class="line">              root           html;</span><br><span class="line">              #默认就使用php-fpm</span><br><span class="line">              fastcgi_pass   127.0.0.1:9000;</span><br><span class="line">              fastcgi_index  index.php;</span><br><span class="line">              #修改4：修改fastcig的路径</span><br><span class="line">              fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">              include        fastcgi_params;</span><br><span class="line">          &#125;</span><br><span class="line"></span><br><span class="line">          # deny access to .htaccess files, if Apache&apos;s document root</span><br><span class="line">          # concurs with nginx&apos;s one</span><br><span class="line">          #</span><br><span class="line">          #location ~ /\.ht &#123;</span><br><span class="line">          #    deny  all;</span><br><span class="line">          #&#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure></p>
+<p>保存配置文件。 </p>
+<h4 id="启动nginx"><a href="#启动nginx" class="headerlink" title="启动nginx"></a>启动nginx</h4><p>service nginx start </p>
+<h4 id="（可选）设置nginx开机自启动"><a href="#（可选）设置nginx开机自启动" class="headerlink" title="（可选）设置nginx开机自启动"></a>（可选）设置nginx开机自启动</h4><p>创建nginx启动命令脚本 </p>
+<p>vim /etc/init.d/nginx  </p>
+<p>插入以下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">! /bin/bash</span><br><span class="line"> chkconfig: - 85 15</span><br><span class="line">PATH=/usr/local/nginx</span><br><span class="line">DESC=&quot;nginx daemon&quot;</span><br><span class="line">NAME=nginx</span><br><span class="line">DAEMON=$PATH/sbin/$NAME</span><br><span class="line">CONFIGFILE=$PATH/conf/$NAME.conf</span><br><span class="line">PIDFILE=$PATH/logs/$NAME.pid</span><br><span class="line">SCRIPTNAME=/etc/init.d/$NAME</span><br><span class="line">set -e</span><br><span class="line">[ -x &quot;$DAEMON&quot; ] || exit 0</span><br><span class="line">do_start() &#123;</span><br><span class="line">$DAEMON -c $CONFIGFILE || echo -n &quot;nginx already running&quot;</span><br><span class="line">&#125;</span><br><span class="line">do_stop() &#123;</span><br><span class="line">$DAEMON -s stop || echo -n &quot;nginx not running&quot;</span><br><span class="line">&#125;</span><br><span class="line">do_reload() &#123;</span><br><span class="line">$DAEMON -s reload || echo -n &quot;nginx can&apos;t reload&quot;</span><br><span class="line">&#125;</span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">start)</span><br><span class="line">echo -n &quot;Starting $DESC: $NAME&quot;</span><br><span class="line">do_start</span><br><span class="line">echo &quot;.&quot;</span><br><span class="line">;;</span><br><span class="line">stop)</span><br><span class="line">echo -n &quot;Stopping $DESC: $NAME&quot;</span><br><span class="line">do_stop</span><br><span class="line">echo &quot;.&quot;</span><br><span class="line">;;</span><br><span class="line">reload|graceful)</span><br><span class="line">echo -n &quot;Reloading $DESC configuration...&quot;</span><br><span class="line">do_reload</span><br><span class="line">echo &quot;.&quot;</span><br><span class="line">;;</span><br><span class="line">restart)</span><br><span class="line">echo -n &quot;Restarting $DESC: $NAME&quot;</span><br><span class="line">do_stop</span><br><span class="line">do_start</span><br><span class="line">echo &quot;.&quot;</span><br><span class="line">;;</span><br><span class="line">*)</span><br><span class="line">echo &quot;Usage: $SCRIPTNAME &#123;start|stop|reload|restart&#125;&quot; &gt;&amp;2</span><br><span class="line">exit 3</span><br><span class="line">;;</span><br><span class="line">esac</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+<p>设置执行权限  </p>
+<blockquote>
+<p>chmod a+x /etc/init.d/nginx </p>
+</blockquote>
+<p>注册成服务  </p>
+<blockquote>
+<p>chkconfig –add nginx </p>
+</blockquote>
+<p>设置开机启动  </p>
+<blockquote>
+<p>chkconfig nginx on </p>
+</blockquote>
+<p>重启查看nginx服务是否自动启动（！！！ 请确保重启不会影响现有业务，如不确定请不要执行，后果自负）</p>
+<blockquote>
+<p>shutdown -h 0 -r<br>netstat -apn|grep nginx  </p>
+</blockquote>
+<p>配置nginx成服务还有一个好处就是可以直接通过systemctl或者service直接启动或停止nginx了，例如 systemctl stop nginx 或者 service nginx stop就可以停止nginx了</p>
+<h4 id="编写测试文件"><a href="#编写测试文件" class="headerlink" title="编写测试文件"></a>编写测试文件</h4><blockquote>
+<p>vim /usr/share/nginx/html/phpinfo.php </p>
+</blockquote>
+<p>比如编辑一个phpinfo<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">phpinfo();</span><br></pre></td></tr></table></figure></p>
+<p>最后就可以访问刚刚这个文件了 </p>
+<h3 id="yum安装mysql5-7"><a href="#yum安装mysql5-7" class="headerlink" title="yum安装mysql5.7"></a>yum安装mysql5.7</h3><h4 id="获取mysql-YUM源"><a href="#获取mysql-YUM源" class="headerlink" title="获取mysql YUM源"></a>获取mysql YUM源</h4><blockquote>
+<p>wget <a href="https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm" target="_blank" rel="noopener">https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm</a></p>
+</blockquote>
+<h4 id="安装mysql源"><a href="#安装mysql源" class="headerlink" title="安装mysql源"></a>安装mysql源</h4><blockquote>
+<p>yum -y localinstall mysql57-community-release-el7-11.noarch.rpm</p>
+</blockquote>
+<h4 id="在线安装Mysql"><a href="#在线安装Mysql" class="headerlink" title="在线安装Mysql"></a>在线安装Mysql</h4><blockquote>
+<p>yum -y install mysql-community-server</p>
+</blockquote>
+<h4 id="启动Mysql服务"><a href="#启动Mysql服务" class="headerlink" title="启动Mysql服务"></a>启动Mysql服务</h4><blockquote>
+<p>systemctl start mysqld<br>（service mysqld start 也行）</p>
+</blockquote>
+<h4 id="设置开机启动"><a href="#设置开机启动" class="headerlink" title="设置开机启动"></a>设置开机启动</h4><blockquote>
+<p>systemctl enable mysqld<br>systemctl daemon-reload  </p>
+</blockquote>
+<h4 id="修改root本地登录密码"><a href="#修改root本地登录密码" class="headerlink" title="修改root本地登录密码"></a>修改root本地登录密码</h4><p>mysql安装完成之后，在/var/log/mysqld.log文件中给root生成了一个临时的默认密码。</p>
+<blockquote>
+<p>[root@localhost ~]# vi /var/log/mysqld.log</p>
+</blockquote>
+<p>这里的临时密码 eMV.R#mWe3ha</p>
+<blockquote>
+<p>[root@localhost ~]# mysql -u root -p<br>Enter password:  </p>
+</blockquote>
+<p>输入临时密码 进入mysql命令行；</p>
+<blockquote>
+<p>mysql&gt; ALTER USER ‘root’@’localhost’ IDENTIFIED BY ‘Sean123456@’;<br>Query OK, 0 rows affected (0.00 sec)</p>
+</blockquote>
+<p>修改密码为 Sean123456@ (备注 mysql5.7默认密码策略要求密码必须是大小写字母数字特殊字母的组合，至少8位)</p>
+<h4 id="设置允许远程登录"><a href="#设置允许远程登录" class="headerlink" title="设置允许远程登录"></a>设置允许远程登录</h4><p>Mysql默认不允许远程登录，我们需要设置下，并且防火墙开放3306端口；</p>
+<blockquote>
+<p>mysql&gt; GRANT ALL PRIVILEGES ON . TO ‘root’@’%’ IDENTIFIED BY ‘ZhipengWang2012@’ WITH GRANT OPTION;<br>Query OK, 0 rows affected, 1 warning (0.01 sec)<br>mysql&gt; exit;<br>Bye</p>
+</blockquote>
+<p>这里其实最好新建一个用户： </p>
+<blockquote>
+<p>GRANT ALL PRIVILEGES ON <em>.</em> TO ‘adduser‘@’%’ IDENTIFIED BY ‘SeanTest’ WITH GRANT OPTION;</p>
+</blockquote>
+<p>开放3306端口 </p>
+<blockquote>
+<p>firewall-cmd –zone=public –add-port=3306/tcp –permanent<br>重启防火墙<br>firewall-cmd –reload  </p>
+</blockquote>
+<h4 id="配置默认编码为utf8"><a href="#配置默认编码为utf8" class="headerlink" title="配置默认编码为utf8"></a>配置默认编码为utf8</h4><p>修改/etc/my.cnf配置文件，在[mysqld]下添加编码配置，如下所示：</p>
+<blockquote>
+<p>[mysqld]<br>character_set_server=utf8<br>init_connect=’SET NAMES utf8’<br>vim /etc/my.cnf  </p>
+</blockquote>
+<p>编辑保存完 重启mysql服务； </p>
+<blockquote>
+<p>systemctl restart mysqld</p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/PHP/" rel="tag"># PHP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/19/服务器部署-1/" rel="next" title="服务器部署篇（一）：服务器主机选择及初始化配置 —— 新增用户及密钥对认证">
+                <i class="fa fa-chevron-left"></i> 服务器部署篇（一）：服务器主机选择及初始化配置 —— 新增用户及密钥对认证
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/22/服务器部署-3/" rel="prev" title="服务器部署篇（三）：php.ini 配置调优 —— 让 PHP 应用性能维持在更高水平">
+                服务器部署篇（三）：php.ini 配置调优 —— 让 PHP 应用性能维持在更高水平 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#源码安装php7-2"><span class="nav-number">1.</span> <span class="nav-text">源码安装php7.2</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#选择需要的php版本"><span class="nav-number">1.1.</span> <span class="nav-text">选择需要的php版本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#下载php源码"><span class="nav-number">1.2.</span> <span class="nav-text">下载php源码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP-FPM"><span class="nav-number">2.</span> <span class="nav-text">PHP-FPM</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#配置PHP-fpm"><span class="nav-number">2.1.</span> <span class="nav-text">配置PHP-fpm</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#yum安装nginx"><span class="nav-number">3.</span> <span class="nav-text">yum安装nginx</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#执行yum安装命令"><span class="nav-number">3.1.</span> <span class="nav-text">执行yum安装命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改配置文件已支持php"><span class="nav-number">3.2.</span> <span class="nav-text">修改配置文件已支持php</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动nginx"><span class="nav-number">3.3.</span> <span class="nav-text">启动nginx</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#（可选）设置nginx开机自启动"><span class="nav-number">3.4.</span> <span class="nav-text">（可选）设置nginx开机自启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编写测试文件"><span class="nav-number">3.5.</span> <span class="nav-text">编写测试文件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#yum安装mysql5-7"><span class="nav-number">4.</span> <span class="nav-text">yum安装mysql5.7</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取mysql-YUM源"><span class="nav-number">4.1.</span> <span class="nav-text">获取mysql YUM源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装mysql源"><span class="nav-number">4.2.</span> <span class="nav-text">安装mysql源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在线安装Mysql"><span class="nav-number">4.3.</span> <span class="nav-text">在线安装Mysql</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#启动Mysql服务"><span class="nav-number">4.4.</span> <span class="nav-text">启动Mysql服务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置开机启动"><span class="nav-number">4.5.</span> <span class="nav-text">设置开机启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改root本地登录密码"><span class="nav-number">4.6.</span> <span class="nav-text">修改root本地登录密码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置允许远程登录"><span class="nav-number">4.7.</span> <span class="nav-text">设置允许远程登录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置默认编码为utf8"><span class="nav-number">4.8.</span> <span class="nav-text">配置默认编码为utf8</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

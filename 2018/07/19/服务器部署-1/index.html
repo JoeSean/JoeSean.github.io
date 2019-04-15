@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="PHP," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="主机PHP 应用开发好了之后，还需要部署到远程主机上，才能让用户访问我们提供的服务。">
+<meta name="keywords" content="PHP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="服务器部署篇（一）：服务器主机选择及初始化配置 —— 新增用户及密钥对认证">
+<meta property="og:url" content="http://yoursite.com/2018/07/19/服务器部署-1/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="主机PHP 应用开发好了之后，还需要部署到远程主机上，才能让用户访问我们提供的服务。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-12T09:23:26.116Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="服务器部署篇（一）：服务器主机选择及初始化配置 —— 新增用户及密钥对认证">
+<meta name="twitter:description" content="主机PHP 应用开发好了之后，还需要部署到远程主机上，才能让用户访问我们提供的服务。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/19/服务器部署-1/"/>
+
+
+
+
+
+  <title>服务器部署篇（一）：服务器主机选择及初始化配置 —— 新增用户及密钥对认证 | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/19/服务器部署-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">服务器部署篇（一）：服务器主机选择及初始化配置 —— 新增用户及密钥对认证</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-19T16:02:21-04:00">
+                2018-07-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="主机"><a href="#主机" class="headerlink" title="主机"></a>主机</h3><p>PHP 应用开发好了之后，还需要部署到远程主机上，才能让用户访问我们提供的服务。<a id="more"></a>一般来说，目前市场上提供的主机有四种：共享服务器、虚拟私有服务器（VPS）、专用服务器和 PaaS。每种主机适用场景不同，相应的价格差距也很大。</p>
+<h4 id="共享服务器"><a href="#共享服务器" class="headerlink" title="共享服务器"></a>共享服务器</h4><p>这种最便宜，一般来说这种适用于非开发者部署网站，比如非程序员出生的站长，部署 WordPress、Discuz 之类的 CMS 网站，不需要懂代码，也不需要配置服务器环境，只需通过 Web 界面操作即可，这种类型的主机资源由很多人共享，存放在不同类目，从安全和性能上来说都很差，而且不允许用户远程登录，支持的软件和扩展有限，不建议开发者使用这种类型的主机。市面上常见的香港主机、美国主机就属于这种服务器。</p>
+<h4 id="虚拟私有服务器"><a href="#虚拟私有服务器" class="headerlink" title="虚拟私有服务器"></a>虚拟私有服务器</h4><p>虚拟私有服务器就是我们常说的 VPS，这种类型的主机不是物理上的独立主机，而是逻辑上的独立主机，由一些列系统资源组成，分布在多台服务器中，但是拥有自己独立的文件系统、根用户、系统进程和 IP 地址，内存、CPU和带宽是固定的，所以感觉上就是一台独立的主机。我们可以 SSH 远程登录，安装自己需要的软件，对服务器配置进行调优和修改，所以拥有更多的自主性，当然价格也要贵一些。典型代表有 Linode 等。</p>
+<h4 id="专用服务器"><a href="#专用服务器" class="headerlink" title="专用服务器"></a>专用服务器</h4><p>专用服务器是机架式设备，由主机商代你安装、运行和维护，我们可以根据自己制定的规格配置专用服务器。专用服务器是真实的物理设备，安装、配置和维护成本较高，但是能提供更好的性能，一般大公司如 BAT 都会部署这种类型主机。</p>
+<p>PaaS<br>使用云计算提供的平台即服务（PaaS）能快速发布 PHP 应用，与虚拟私有服务器和专用服务器不同，我们无需管理 PaaS，只需登录 PaaS 提供商的控制面板，点击按钮即可。常见的 PaaS 如下：</p>
+<ul>
+<li>Amazon AWS</li>
+<li>阿里云</li>
+<li>百度云</li>
+<li>腾讯云</li>
+<li>Google App Engine</li>
+<li>Microsoft Azure</li>
+</ul>
+<p>各个云计算提供商的价格有所不同，但基本和 VPS 持平。</p>
+<h3 id="选择主机方案"><a href="#选择主机方案" class="headerlink" title="选择主机方案"></a>选择主机方案</h3><p>我们要根据自己的需求选择合适的主机方案，对于中小型 PHP 应用，使用 VPS 或 PaaS 是最佳选择，目前来说，云计算服务越来越发达，提供的功能越来越丰富，PaaS 是最佳选择。国内的话就阿里云 ECS 了。</p>
+<h3 id="设置服务器"><a href="#设置服务器" class="headerlink" title="设置服务器"></a>设置服务器</h3><h4 id="首次登录"><a href="#首次登录" class="headerlink" title="首次登录"></a>首次登录</h4><p>首先，我们需要登录新买的服务器，在本地设备中打开终端，执行 ssh 命令，登录服务器：</p>
+<blockquote>
+<p>ssh root@your_server_ip_address</p>
+</blockquote>
+<p>这个命令可能会让你确认新服务器的可靠性，输入 yes 并回车即可。</p>
+<p>接下来需要输入根用户的密码，一般购买服务器后服务器提供商会给你根用户的密码，输入该密码登录即可。</p>
+<p>登录之后，我们可以升级下操作系统的软件：</p>
+<blockquote>
+<p># Ubuntu<br>apt-get update;<br>apt-get upgrade;  </p>
+<p># CentOS<br>yum update  </p>
+</blockquote>
+<h4 id="新增用户"><a href="#新增用户" class="headerlink" title="新增用户"></a>新增用户</h4><p>我们要创建一个非根用户执行以后的日常操作以提高系统安全性，由于根用户拥有一切权限，所以我们应该尽量避免登录该用户。</p>
+<p>下面我们以 Ubuntu 系统为例，演示如何创建新用户 deploy：</p>
+<blockquote>
+<p># 创建用户<br>adduser deploy<br># 让用户拥有sudo权限<br>usermod -a -G sudo deploy<br># 设置用户密码<br>passwd deploy  </p>
+</blockquote>
+<p>对于 CentOS 用户对应操作如下：</p>
+<blockquote>
+<p># 创建用户<br>adduser deploy<br># 让用户拥有sudo权限<br>usermod -a -G wheel deploy<br># 设置用户密码<br>passwd deploy  </p>
+</blockquote>
+<h4 id="SSH-密钥对认证"><a href="#SSH-密钥对认证" class="headerlink" title="SSH 密钥对认证"></a>SSH 密钥对认证</h4><p>创建完新用户后，在本地设备以如下方式登录服务器：</p>
+<blockquote>
+<p>ssh deploy@your_server_ip_address</p>
+</blockquote>
+<p>这个命令需要输入该用户密码后才能登录，我们可以禁用密码登录，以提高系统安全性，密码认证有漏洞，会遭受暴力攻击。对此，我们的解决方案就是使用密钥对认证。</p>
+<p>密钥对认证是个复杂的话题，简单来说，我们在本地设备中创建一对「密钥」，其中一个是私钥（保存在本地），另一个是公钥（传到远程服务器），之所以叫密钥对，是因为使用公钥加密的信息只能使用私钥解密。</p>
+<p>使用 SSH 密钥对认证方式登录远程服务器时，远程服务器会随机创建一个消息，使用公钥加密，然后把密文发送给本地设备，本地设备收到密文后使用私钥解密，然后把解密后的消息发送给远程服务器，远程服务器验证解密消息后，再授予访问远程服务器的权限。</p>
+<p>需要指出的是，如果是多台电脑需要登录远程服务器，这或许不是最好的方式，因为需要在每台电脑中生成 SSH 密钥对，然后再把每个密钥对中的公钥复制到远程服务器中。这种情况下，最好还是使用安全的密码进行登录。不过，如果只有一台本地电脑访问远程服务器，SSH 密钥对认证是最好的方式。</p>
+<p>生成 SSH 密钥对的方式是使用以下指令：</p>
+<blockquote>
+<p>ssh-keygen</p>
+</blockquote>
+<p>然后按照屏幕上显示的内容，按照提示输入所需要的信息。这个命令会在本地创建两个文件：~/.ssh/id_rsa.pub（公钥）和 ~/.ssh/id_rsa（私钥）。私钥应该保存在本地电脑中，而且要保密，公钥必须复制到服务器中，我们可以使用 scp （安全复制）命令复制公钥：</p>
+<blockquote>
+<p>scp ~/.ssh/id_rsa.pub deploy@your_server_ip_address:<br>注：一定要在末尾加上:符号，这会把公钥复制到远程服务器中 deploy 用户的家目录。  </p>
+</blockquote>
+<p>接下来，以 deploy 用户的身份登录远程服务器，登录后，确认 ~/.ssh 目录是否存在，如果不存在，需要执行下面的命令手动创建：</p>
+<blockquote>
+<p>mkdir ~/.ssh</p>
+</blockquote>
+<p>然后执行下面的命令创建 ~/.ssh/authorized_keys 文件：</p>
+<blockquote>
+<p>touch ~/.ssh/authorized_keys</p>
+</blockquote>
+<p>这个文件的内容是一系列允许登录这台远程服务器的公钥。执行下面的命令，把刚上传的公钥添加到 ~/.ssh/authorized_keys 文件中：</p>
+<blockquote>
+<p>cat ~/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</p>
+</blockquote>
+<p>最后，我们需要修改几个目录和文件的权限，只让 deploy 用户访问 ~/.ssh 目录和 ~/.ssh/authorized_keys 文件：</p>
+<blockquote>
+<p>chown -R deploy:deploy ~/.ssh<br>chmod 700 ~/.ssh<br>chmod 600 ~/.ssh/authorized_keys</p>
+</blockquote>
+<p>至此，所有工作完成，你可以在本地通过 SSH 密钥对认证登录到这条远程服务器了。</p>
+<h4 id="禁用密码，禁止根用户登录"><a href="#禁用密码，禁止根用户登录" class="headerlink" title="禁用密码，禁止根用户登录"></a>禁用密码，禁止根用户登录</h4><p>下面我们要禁止所有用户通过密码登录，还要禁止根用户登录。</p>
+<p>登录到远程服务器后，打开 SSH 配置文件 /etc/ssh/sshd_config，找到 PasswordAuthentication 设置，将其改为 no；然后，找到 PermitRootLogin 设置，将其改为 no，之后保存改动，执行下面的命令重启 SSH 服务，让改动生效：</p>
+<blockquote>
+<p># Ubuntu<br>sudo service ssh restart</p>
+<p># CentOS<br>sudo systemctl restart sshd.service</p>
+</blockquote>
+<p>服务器的安全是长久任务，需要长期关注，除了以上配置外，还建议安装防火墙。Ubuntu 用户可以使用 UFW，CentOS 用户可以使用 firewalld 。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/PHP/" rel="tag"># PHP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/18/php编译参数configure配置详解/" rel="next" title="php编译参数configure配置详解">
+                <i class="fa fa-chevron-left"></i> php编译参数configure配置详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/21/服务器部署-2/" rel="prev" title="服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解">
+                服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#主机"><span class="nav-number">1.</span> <span class="nav-text">主机</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#共享服务器"><span class="nav-number">1.1.</span> <span class="nav-text">共享服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#虚拟私有服务器"><span class="nav-number">1.2.</span> <span class="nav-text">虚拟私有服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#专用服务器"><span class="nav-number">1.3.</span> <span class="nav-text">专用服务器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#选择主机方案"><span class="nav-number">2.</span> <span class="nav-text">选择主机方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置服务器"><span class="nav-number">3.</span> <span class="nav-text">设置服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#首次登录"><span class="nav-number">3.1.</span> <span class="nav-text">首次登录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#新增用户"><span class="nav-number">3.2.</span> <span class="nav-text">新增用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SSH-密钥对认证"><span class="nav-number">3.3.</span> <span class="nav-text">SSH 密钥对认证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#禁用密码，禁止根用户登录"><span class="nav-number">3.4.</span> <span class="nav-text">禁用密码，禁止根用户登录</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

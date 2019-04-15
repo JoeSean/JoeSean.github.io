@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="WEB安全," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="SQL注入　　SQL注入漏洞一直是web系统漏洞中占比非常大的一种漏洞，下面我们来看看SQL注入的几种方式。">
+<meta name="keywords" content="WEB安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sql注入、Xss跨站、Csrf漏洞">
+<meta property="og:url" content="http://yoursite.com/2018/02/01/php-2/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="SQL注入　　SQL注入漏洞一直是web系统漏洞中占比非常大的一种漏洞，下面我们来看看SQL注入的几种方式。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-12T09:23:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sql注入、Xss跨站、Csrf漏洞">
+<meta name="twitter:description" content="SQL注入　　SQL注入漏洞一直是web系统漏洞中占比非常大的一种漏洞，下面我们来看看SQL注入的几种方式。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/02/01/php-2/"/>
+
+
+
+
+
+  <title>Sql注入、Xss跨站、Csrf漏洞 | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/01/php-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Sql注入、Xss跨站、Csrf漏洞</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-02-01T09:58:03-05:00">
+                2018-02-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="SQL注入"><a href="#SQL注入" class="headerlink" title="SQL注入"></a>SQL注入</h2><p>　　SQL注入漏洞一直是web系统漏洞中占比非常大的一种漏洞，下面我们来看看SQL注入的几种方式。</p>
+<a id="more"></a>
+<h3 id="从利用方式角度可以分为两种类型-常规注入、宽字节注入。"><a href="#从利用方式角度可以分为两种类型-常规注入、宽字节注入。" class="headerlink" title="从利用方式角度可以分为两种类型:常规注入、宽字节注入。"></a>从利用方式角度可以分为两种类型:常规注入、宽字节注入。</h3><h4 id="常规注入方式，通常没有任何过滤，直接把参数存放到了SQL语句当中"><a href="#常规注入方式，通常没有任何过滤，直接把参数存放到了SQL语句当中" class="headerlink" title="常规注入方式，通常没有任何过滤，直接把参数存放到了SQL语句当中"></a>常规注入方式，通常没有任何过滤，直接把参数存放到了SQL语句当中</h4><blockquote>
+<p>$uid = $_GET[‘uid’];  //接受用户id<br>$sql =”SELECT * FROM user WHERE uid=$uid”; //构造sql查询语句</p>
+</blockquote>
+<p>　　非常容易发现，现在开发者一般都会做一些过滤，比如使用addslashes()，但是过滤有时候也不一定好使。</p>
+<h4 id="宽字节注入方式"><a href="#宽字节注入方式" class="headerlink" title="宽字节注入方式"></a>宽字节注入方式</h4><p>　　在实际环境中程序员一般不会写上面类似的代码，一般都会用addslashes()等过滤函数对从web传递过来的参数进行过滤。不过有句话叫做，道高一尺魔高一丈，我们看看白帽子是怎么突破的。用PHP连接MySQL的时候，当设置 character_set_client=gbk时候会导致一个编码漏洞。我们知道addslashes() 会把参数 1’ 转换成 1\’,而我们提交参数 1%df’ 时候会转成 1縗’，那我们输入 1%df’ or 1=1%23时候，会被转换成 1縗’ or 1=1#’。</p>
+<p>　　简单来说%df’会被过滤函数转义为%df\’ ，%df\’ = %df%5c%27  在使用gbk编码的时候会认为%df%5c是一个宽字节%df%5c%27=縗’，这样就会产生注入。</p>
+<p>　　那如何防御这个宽字节呢？我希望大家开发网站尽量使用UTF8编码格式，如果转换麻烦，最安全的方法就是使用PDO预处理。挖掘这种漏洞主要是检查是否使用了gbk，搜索guanjianc character_set_client=gbk 和mysql_set_chatset(‘gbk’) 。</p>
+<p>　　二次urldecode注入，这中方式也是因为使用了urldecode不当所引起的漏洞。</p>
+<p>　　我们刚才知道了 addslashes()函数可以防止注入，他会在(‘)、(“)、()前面加上反斜杠来转义。</p>
+<p>　　那我们假设我们开启了GPC，我们提交了一个参数，/test.php?uid=1%2527,因为参数中没有单引号，所以第一次解码会变成uid=1%27,%25解码出来就是%，</p>
+<p>　　这时候程序里如果再去使用urldecode来解码，就会把%27解码成单引号(‘)，最终的结果就是uid=1’.</p>
+<p>　　我们现在知道了原有是因为urldecode引起的，我们可以通过编辑器的搜索urldecode和rawurldecode找到二次url漏洞。</p>
+<h3 id="从漏洞类型区分可以分为三种类型："><a href="#从漏洞类型区分可以分为三种类型：" class="headerlink" title="从漏洞类型区分可以分为三种类型："></a>从漏洞类型区分可以分为三种类型：</h3><ul>
+<li>可显</li>
+</ul>
+<p>　　攻击者可以直接在当前界面内容中获取想要获得的内容。</p>
+<ul>
+<li>报错</li>
+</ul>
+<p>　　数据库查询返回结果并没有在页面中显示，但是应用程序将数据库报错信息打印到了页面中。</p>
+<p>　　所以攻击者可以构造数据库报错语句，从报错信息中获取想要获得的内容，所以我建议在数据库类中设置不抛出错误信息。</p>
+<ul>
+<li>盲注</li>
+</ul>
+<p>　　数据库查询结果无法从直观页面中获取攻击者通过使用数据库逻辑或使数据库库执行延时等方法获取想要获得的内容。</p>
+<h3 id="SQL-注入漏洞挖掘方法"><a href="#SQL-注入漏洞挖掘方法" class="headerlink" title="SQL 注入漏洞挖掘方法"></a>SQL 注入漏洞挖掘方法</h3><p>　　针对上面提到的利用漏洞方法，总结了以下的挖掘方法：</p>
+<ul>
+<li><p>参数接收位置，检查是否有没过滤直接使用  _POST、$_COOKIE 参数的。</p>
+</li>
+<li><p>SQL语句检查，搜索关键词 select update insert 等SQL语句关键处，检查SQL语句的参数是否可以被控制。</p>
+</li>
+<li><p>宽字节注入,如果网站使用的 GBK 编码情况下，搜索guanjianc character_set_client=gbk 和mysql_set_chatset(‘gbk’) 就行。</p>
+</li>
+<li><p>二次 urldecode 注入，少部分情况，gpc 可以通过编辑器的搜索 urldecode 和 rawurldecode 找到二次url漏洞。</p>
+</li>
+</ul>
+<p>SQL 注入漏洞防范方法</p>
+<p>　　虽然SQL注入漏洞非常多，但是防范起来却挺简单的，下面介绍几个过滤函数和类:</p>
+<p>gpc/rutime 魔术引号</p>
+<p>过滤函数和类</p>
+<ul>
+<li><p>addslashes</p>
+</li>
+<li><p>mysql_real_escape_string</p>
+</li>
+<li><p>intval</p>
+</li>
+</ul>
+<p>PDO 预处理</p>
+<h2 id="XSS跨站"><a href="#XSS跨站" class="headerlink" title="XSS跨站"></a>XSS跨站</h2><p>　　XSS 又叫 CSS (Cross Site Script) ，跨站脚本攻击。它指的是恶意攻击者往 Web 页面里插入恶意 html 代码，当用户浏览该页之时，嵌入其中 Web 里面的 html 代码会被执行，从而达到恶意的特殊目的。</p>
+<p>　　XSS 属于被动式的攻击，因为其被动且不好利用，所以许多人常呼略其危害性。在 WEB2.0 时代，强调的是互动，使得用户输入信息的机会大增，在这个情况下，我们作为开发者，在开发的时候，要提高警惕。</p>
+<h3 id="xss-漏洞分类"><a href="#xss-漏洞分类" class="headerlink" title="xss 漏洞分类"></a>xss 漏洞分类</h3><ul>
+<li>反射型，危害小，一般</li>
+</ul>
+<p>　　反射型XSS原理：就是通过给别人发送带有恶意脚本代码参数的URL，当URL地址被打开时，特定的代码参数会被HTML解析，执行，如此就可以获取用户的COOIKE，进而盗号登陆。比如hack甲构造好修改密码的URL并把密码修改成123，但是修改密码只有在登陆方乙才能修改，乙在登陆的情况下点击甲构造好的URL将直接在不知情的情况下修改密码。</p>
+<p>　　特点是：非持久化，必须用户点击带有特定参数的链接才能引起。</p>
+<ul>
+<li>存储型，危害大，影响时间长</li>
+</ul>
+<p>　　存储型XSS原理，假设你打开了一篇正常的文章页面，下面有评论功能。这个时候你去评论了一下，在文本框中输入了一些JavaScript代码，提交之后,你刷新这个页面后发现刚刚提交的代码又被原封不动的返回来并且执行了。</p>
+<p>　　这个时候你会想,我要写一段 JavaScript 代码获取 cookie 信息，然后通过ajax发送到自己的服务器去。构造好代码后你把链接发给其他的朋友，或者网站的管理员，他们打开 JavaScript 代码就执行了，你服务器就接收到了sessionid，你就可以拿到他的用户权限了。</p>
+<ul>
+<li>dom型，特殊的一种</li>
+</ul>
+<p>　　dom型 XSS 是因为 JavaScript 执行了dom 操作，所造成的 XSS 漏洞，具体如下图。可以看到虽然经过 html 转义了，但是这块代码在返回到 html 中，又被 JavaScript 作为 dom 元素操作。那当我输入?name=&lt;img src=1 onerror=alert(1) 的时候依然会存在 XSS 漏洞。</p>
+<h3 id="xss-漏洞挖掘方法"><a href="#xss-漏洞挖掘方法" class="headerlink" title="xss 漏洞挖掘方法"></a>xss 漏洞挖掘方法</h3><p>　　根据上面的一些特点，可以总结出几个分析出几个挖掘方法：</p>
+<ul>
+<li><p>数据接收位置，检查 _POST、$_COOKIE是否经过转义。</p>
+</li>
+<li><p>常见的反射型XSS搜索这种类似位置发现次数较多。</p>
+</li>
+<li><p>而存储型在文章，评论出现比较多。</p>
+</li>
+</ul>
+<h3 id="XSS-漏洞防范方法"><a href="#XSS-漏洞防范方法" class="headerlink" title="XSS 漏洞防范方法"></a>XSS 漏洞防范方法</h3><ul>
+<li><p>转义html实体，有两种方式：在入口和出口,我建议是在入口处转义，防止出口位置取出来的时候忘记转义，如果已经在入口转义了，出口位置就不用再次转义。</p>
+</li>
+<li><p>在富文本编辑器中，经常会用到一些元素的属性，比如上图的onerror，那我们还需对元素的属性建立黑白名单。</p>
+</li>
+<li><p>httpOnly 即使存在xss漏洞，可以把危害大大降低。</p>
+</li>
+</ul>
+<h2 id="CSRF漏洞"><a href="#CSRF漏洞" class="headerlink" title="CSRF漏洞"></a>CSRF漏洞</h2><h3 id="CSRF-漏洞介绍"><a href="#CSRF-漏洞介绍" class="headerlink" title="CSRF 漏洞介绍"></a>CSRF 漏洞介绍</h3><p>　　CSRF（Cross-site request forgery）跨站请求伪造，通常缩写为CSRF或者XSRF，是一种对网站的恶意利用。听起来像跨站脚本（XSS），但它与XSS非常不同，XSS利用站点内的信任用户。</p>
+<p>　　而 CSRF 则通过伪装来自受信任用户的请求来利用受信任的网站。与 XSS 攻击相比，CSRF 攻击往往不大流行（因此对其进行防范的资源也相当稀少）和难以防范，所以被认为比XSS更具危险性。</p>
+<p>　　csrf 主要用来做越权操作，而且 csrf 一直没有被关注起来，所以很多程序现在也没有相关的防范措施。</p>
+<h3 id="CSRF-案例"><a href="#CSRF-案例" class="headerlink" title="CSRF 案例"></a>CSRF 案例</h3><p>　　我们来看下面的一段代码,这个表单当被访问到的时候，用户就退出了登录。假设有一个转账的表单，只需要填写对方的用户名，和金额就可以，那如果我提前把 URL 构造好，发给受害者，当点击后，钱就被转走了。</p>
+<p>　　或者我把这个 URL 放到我的网页中，通过&lt;img src=”我构造的URL” ，当其他人打开我的网址后，就中招了。</p>
+<h3 id="CSRF漏洞挖掘方法"><a href="#CSRF漏洞挖掘方法" class="headerlink" title="CSRF漏洞挖掘方法"></a>CSRF漏洞挖掘方法</h3><p>　　通过上面的描述，我们知道了漏洞的原有，那我们审计的时候可以检查处理表单有没有以下判断。</p>
+<ul>
+<li><p>是否有验证 token。</p>
+</li>
+<li><p>是否有图片验证码。</p>
+</li>
+<li><p>是否有 refe 信息。</p>
+</li>
+</ul>
+<p>　　如果三个判断都没有，那么就存在了 CSRF 漏洞，CSRF 不仅限于 GET 请求， POST 请求同样存在。</p>
+<h3 id="CSRF-漏洞防范方法"><a href="#CSRF-漏洞防范方法" class="headerlink" title="CSRF 漏洞防范方法"></a>CSRF 漏洞防范方法</h3><ul>
+<li><p>图片验证码，这个想必大家都知道，但是用户体验并不好，我们可以看下面的一些处理方法。</p>
+</li>
+<li><p>token验证。</p>
+</li>
+<li><p>token验证方法如下，每次访问表单页的时候，生成一个不可预测的token存放在服务器session中，另外一份放页面中，提交表单的时候需要把这个token带过去，接收表单的时候先验证一下token是否合法。</p>
+</li>
+<li><p>Referer信息验证</p>
+</li>
+</ul>
+<p>　　大多数情况下，浏览器访问一个地址，其中header头里面会包含Referer信息,里面存储了请求是从哪里发起的。</p>
+<p>　　如果HTTP头里包含有Referer的时候，我们可以区分请求是同域下还是跨站发起的，所以我们也可以通过判断有问题的请求是否是同域下发起的来防御 CSRF 攻击。</p>
+<p>　　Referer 验证的时候有几点需要注意，如果判断Referer是否包含 *.XXX.com,如果有子域名有漏洞，会存在绕过的可能。</p>
+<p>　　如果判断的条件的是Referer中是否包含字符 ‘xxx.com’  那攻击者在他目录中建立一个 xxx.com 文件夹同样存在绕过的可能。如果可以最合适的判断是，直接判断是否等于当前域名。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/WEB安全/" rel="tag"># WEB安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/20/mysql-3/" rel="next" title="MySQL中EXPLAIN结果的参数详解">
+                <i class="fa fa-chevron-left"></i> MySQL中EXPLAIN结果的参数详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/12/algorithm-1/" rel="prev" title="php实现经典算法">
+                php实现经典算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SQL注入"><span class="nav-number">1.</span> <span class="nav-text">SQL注入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#从利用方式角度可以分为两种类型-常规注入、宽字节注入。"><span class="nav-number">1.1.</span> <span class="nav-text">从利用方式角度可以分为两种类型:常规注入、宽字节注入。</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#常规注入方式，通常没有任何过滤，直接把参数存放到了SQL语句当中"><span class="nav-number">1.1.1.</span> <span class="nav-text">常规注入方式，通常没有任何过滤，直接把参数存放到了SQL语句当中</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#宽字节注入方式"><span class="nav-number">1.1.2.</span> <span class="nav-text">宽字节注入方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从漏洞类型区分可以分为三种类型："><span class="nav-number">1.2.</span> <span class="nav-text">从漏洞类型区分可以分为三种类型：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SQL-注入漏洞挖掘方法"><span class="nav-number">1.3.</span> <span class="nav-text">SQL 注入漏洞挖掘方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#XSS跨站"><span class="nav-number">2.</span> <span class="nav-text">XSS跨站</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#xss-漏洞分类"><span class="nav-number">2.1.</span> <span class="nav-text">xss 漏洞分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xss-漏洞挖掘方法"><span class="nav-number">2.2.</span> <span class="nav-text">xss 漏洞挖掘方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#XSS-漏洞防范方法"><span class="nav-number">2.3.</span> <span class="nav-text">XSS 漏洞防范方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CSRF漏洞"><span class="nav-number">3.</span> <span class="nav-text">CSRF漏洞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CSRF-漏洞介绍"><span class="nav-number">3.1.</span> <span class="nav-text">CSRF 漏洞介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSRF-案例"><span class="nav-number">3.2.</span> <span class="nav-text">CSRF 案例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSRF漏洞挖掘方法"><span class="nav-number">3.3.</span> <span class="nav-text">CSRF漏洞挖掘方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CSRF-漏洞防范方法"><span class="nav-number">3.4.</span> <span class="nav-text">CSRF 漏洞防范方法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

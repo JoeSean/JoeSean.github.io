@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="PHP," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="默认安装的 PHP 就像是在百货商店里购买的普通套装，虽然合身，却不完美。调优的 PHP 就像是定做的套装，完全匹配你的尺寸。">
+<meta name="keywords" content="PHP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="服务器部署篇（三）：php.ini 配置调优 —— 让 PHP 应用性能维持在更高水平">
+<meta property="og:url" content="http://yoursite.com/2018/07/22/服务器部署-3/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="默认安装的 PHP 就像是在百货商店里购买的普通套装，虽然合身，却不完美。调优的 PHP 就像是定做的套装，完全匹配你的尺寸。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-12T09:23:27.056Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="服务器部署篇（三）：php.ini 配置调优 —— 让 PHP 应用性能维持在更高水平">
+<meta name="twitter:description" content="默认安装的 PHP 就像是在百货商店里购买的普通套装，虽然合身，却不完美。调优的 PHP 就像是定做的套装，完全匹配你的尺寸。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/22/服务器部署-3/"/>
+
+
+
+
+
+  <title>服务器部署篇（三）：php.ini 配置调优 —— 让 PHP 应用性能维持在更高水平 | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/22/服务器部署-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">服务器部署篇（三）：php.ini 配置调优 —— 让 PHP 应用性能维持在更高水平</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-22T02:22:31-04:00">
+                2018-07-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>默认安装的 PHP 就像是在百货商店里购买的普通套装，虽然合身，却不完美。调优的 PHP 就像是定做的套装，完全匹配你的尺寸。<a id="more"></a>不过，需要注意的是，调优 PHP 只是提升 PHP 性能和效率的举措，对拙劣的代码和无响应的 API 调用无计可施。</p>
+<h4 id="php-ini文件"><a href="#php-ini文件" class="headerlink" title="php.ini文件"></a>php.ini文件</h4><p>PHP 解释器在 php.ini 文件中配置和调优，这个文件在不同操作系统中的位置有所不同，而且一般命令行对应的 php.ini 和 PHP-FPM 对应的 php.ini 文件是分开的。这里我们假设配置的是 PHP-FPM 对应的 php.ini，但是下面讲的优化措施适用于所有 php.ini。</p>
+<blockquote>
+<p>注：我们首先应该使用 PHP Iniscan 工具扫描 php.ini，检查使用了安全方面的最佳实践。</p>
+</blockquote>
+<h4 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h4><p>运行 PHP 时需要关心每个 PHP 进程要使用多少内存，php.ini 中的 memory_limit 设置用于设定单个 PHP 进程可以使用的系统内存最大值。</p>
+<p>这个设置的默认值是 128M，这对于大多数中小型 PHP 应用来说或许合适，不过，如果运行的是微型 PHP 应用，可以降低这个值，以便节省系统资源，反之，如果运行的是内存集中型 PHP 应用，可以增加这个值。这个值的大小由可用的系统内存决定，确定给 PHP 分配多少值是一门艺术，决定给 PHP 分配多少内存，以及能负担起多少个 PHP-FPM 进程时，可以根据以下维度信息进行判断：</p>
+<ul>
+<li>一共可以分配给 PHP 多少内存？以一个 2G 内存的 VPS 为例，这台设备中可能还运行了其他进程，如 MySQL、Nginx 等，那么留 512M 给 PHP 是合适的。</li>
+<li>每个 PHP 进程平均耗费多少内存？这个要监控进程的内存使用量，可以使用命令行命令 top，也可以在 PHP 脚本中调用 memory_get_peak_usage() 函数，不管使用哪种方式，都要多次运行同一个脚本，然后取内存消耗的平均值。</li>
+<li>能负担起多少个 PHP-FPM 进程？假设我给 PHP 分配了 512M 内存，每个 PHP 进程平均耗费 15M 内存，那么可以负担起 34 个 PHP-FPM 进程。</li>
+<li>有足够的系统资源吗？最后还需要确认有足够的系统资源运行 PHP 应用并处理预期的流量。</li>
+</ul>
+<blockquote>
+<p>注：我们应该使用 Apache Bench 或 Siege 在类似生产环境的条件下对 PHP 应用做压力测试，以确定生产环境是否有足够的资源可用。</p>
+</blockquote>
+<h4 id="Zend-OPcache"><a href="#Zend-OPcache" class="headerlink" title="Zend OPcache"></a>Zend OPcache</h4><p>确定要分配多少内存后，就可以配置 PHP 的 Zend OPcache 扩展，关于这个扩展的详细信息可参考这篇文章：<a href="http://laravelacademy.org/post/4396.html。" target="_blank" rel="noopener">http://laravelacademy.org/post/4396.html。</a></p>
+<p>PHP 5.5.0+ 内置了这个扩展，下面是在 php.ini 文件中配置和优化 Zend OPcache 扩展所用的设置：</p>
+<ul>
+<li>opcache.memory_consumption = 64：为操作码缓存分配的内存（单位是MB），分配的内存量应该可以保存应用中所有 PHP 脚本编译得到的操作码，这个值根据应用的体量可以设置成不同大小的值。</li>
+<li>opcache.interned_strings_buffer = 16：用来存储驻留字符串的内存量（单位是MB），什么是驻留字符串呢？PHP 解释器在背后会找到相同字符串的多个实例，把这个字符串保存在内存中，如果再次使用相同的字符串，PHP 解释器会使用指针，这么做的目的是节省内存。默认情况下，PHP 驻留字符串会隔离在各个 PHP 进程中，这个设置能让 PHP-FPM 进程池把所有进程驻留字符串存储到共享的缓冲区中，以便在 PHP-FPM 进程池中的多个进程之间引用驻留字符串，这样能节省更多内存。</li>
+<li>opcache.max_accelerated_files = 4000：操作码缓存中最多能存储多少个 PHP 脚本，这个值的区间是 2000 到 100000 之间，这个值一定要比 PHP 应用中的文件数大。</li>
+<li>opcache.validate_timestamps = 1：这个设置的值为1时，经过一段时间后 PHP 会检查 PHP 脚本的内容是否有变化，检查的时间间隔由 opcache.revalidate_freq 设置指定。如果这个设置的值为0，PHP 不会检查 PHP 脚本的内容是否有变化，我们必须自己动手清除缓存的操作码。建议在开发环境中设置为1，生产环境中设置为0。</li>
+<li>opcache.revalidate_freq = 0：设置多久（单位是秒）检查一次 PHP 脚本内容是否有变化。设置为0秒的含义是仅当opcache.validate_timestamps 设置为1时，才会在每次请求时都重新验证 PHP 文件，因此，在开发环境中每次都会重新验证 PHP 文件，在生产环境中则不验证。</li>
+<li>opcache.fast_shutdown = 1：这么设置能让操作码使用更快的停机步骤，把对象析构和内存释放交给 Zend Engine 的内存管理器完成。</li>
+</ul>
+<h4 id="文件上传"><a href="#文件上传" class="headerlink" title="文件上传"></a>文件上传</h4><p>如果你的应用允许上传文件，最好设置最大能上传的文件大小。除此之外，最好还要设置最多能同时上传多少个文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">file_uploads = 1</span><br><span class="line">upload_max_filesize = 10M</span><br><span class="line">max_file_uploads = 3</span><br></pre></td></tr></table></figure></p>
+<p>默认情况下，PHP 允许在单次请求中上传 20 个文件，上传的文件最大为 2MB，这里我设置为单次请求最多只能上传 3 个文件，每个文件最大为 10MB，这个值不要设置太大，否则会出现超时。</p>
+<blockquote>
+<p>注：如果非要上传大文件，Web 服务器的配置也要做相应调整。除了在 php.ini 中设置之外，还要调整 Nginx 虚拟主机配置中的 client_max_body_size 设置。</p>
+</blockquote>
+<h4 id="最长执行时间"><a href="#最长执行时间" class="headerlink" title="最长执行时间"></a>最长执行时间</h4><p>php.ini 文件中的 max_execution_time 用于设置单个 PHP 进程在终止之前最长可运行时间。这个设置默认是 30 秒，建议将其设置为 5 秒：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">max_execution_time = 5</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注：在 PHP 脚本中可以调用 set_limit_time() 函数覆盖这个设置。</p>
+</blockquote>
+<p>假设我们想要生成报告，并把结果制作成 PDF 文件，这个任务可能要花 10 分钟才能完成，而我们肯定不想让 PHP 请求等待 10 分钟，我们应该单独编写一个 PHP 文件，让其在单独的后台进程中执行，Web 应用只需几毫秒就可以派生一个单独的后台进程，然后返回 HTTP 响应：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">exec(&apos;echo &quot;create-report.php&quot; | at now&apos;);</span><br><span class="line">echo &apos;report pending...&apos;;</span><br></pre></td></tr></table></figure>
+<p>create-report.php 在单独的后台进程中运行，运行完毕后可以更新数据库，或者通过电子邮件把报告发给收件人。不过这种用法很少见，更多时候我们是通过异步消费队列来实现类似的功能，无论从安全性、扩展性、可维护性上来讲，效果更好，相关的组件有轻量级消息队列 PHPResque 等。</p>
+<h4 id="处理会话"><a href="#处理会话" class="headerlink" title="处理会话"></a>处理会话</h4><p>PHP 默认的会话处理程序会拖慢大型应用，因为这个处理程序会把会话数据存储在硬盘中，需要创建不必要的磁盘 I/O，浪费时间。我们应该把会话数据保存在内存中，例如可以使用 Memcached 或 Redis。这么做还有个额外好处 —— 以后便于伸缩。如果会话数据存储在硬盘中，不便于增加额外的服务器，如果把会话数据存放在 Memcached 或 Redis 里，任何一台分布式 PHP-FPM 服务器都能访问会话数据。</p>
+<p>如果想把会话数据保存在 Memcached 中，需要做如下配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">session.save_handler = &apos;memcached&apos;</span><br><span class="line">session.save_path = &apos;127.0.0.1:11211&apos;</span><br></pre></td></tr></table></figure></p>
+<h4 id="缓冲输出"><a href="#缓冲输出" class="headerlink" title="缓冲输出"></a>缓冲输出</h4><p>如果是在较少的块中发送更多数据，而不是在较多的块中发送较少的数据，那么网络的效率会更高，也就是说，在较少的片段中把内容传递给访问者的浏览器，能减少 HTTP 请求总数。</p>
+<p>因此，我们要让 PHP 缓冲输出，默认情况下，PHP 已经启用了输出缓冲功能，PHP 缓冲 4096 字节的输出之后才会把内容发送给 Web 服务器，推荐配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">output_buffering = 4096</span><br><span class="line">implicit_flush = false</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注：如果想要修改输出缓冲区的大小，确保使用的值是4（32位系统）或8（64位系统）的倍数。</p>
+</blockquote>
+<h4 id="真实路径缓存"><a href="#真实路径缓存" class="headerlink" title="真实路径缓存"></a>真实路径缓存</h4><p>PHP 会缓存应用使用的文件路径，这样每次包含或导入文件时就无需不断搜索包含路径了，这个缓存叫真实路径缓存（realpath cache），如果运行的是大型的 PHP 文件（如 Composer 组件），使用了大量文件，增加 PHP 真实路径缓存的大小能得到更好的性能。</p>
+<p>真实路径缓存的默认大小是 16K，这个缓存所需的准确大小不容易确定，不过可以使用一个小技巧：首先，增加真实路径缓存的大小，设置为特别大的一个值，如 256K，然后，在一个 PHP 脚本的末尾加上 print_r(realpath_cache_size());，输出真实路径缓存的真正大小，最后，把真实路径缓存的大小改为这个真正的值。我们可以在 php.ini 文件中设置真实路径缓存的大小：</p>
+<blockquote>
+<p>realpath_cache_size = 64K</p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/PHP/" rel="tag"># PHP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/21/服务器部署-2/" rel="next" title="服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解">
+                <i class="fa fa-chevron-left"></i> 服务器部署篇（二）：在服务器上对 PHP-FPM 和 Nginx 进行安装配置详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/23/distributed-1/" rel="prev" title="常用的分布式事务解决方案介绍">
+                常用的分布式事务解决方案介绍 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#php-ini文件"><span class="nav-number">1.</span> <span class="nav-text">php.ini文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存"><span class="nav-number">2.</span> <span class="nav-text">内存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zend-OPcache"><span class="nav-number">3.</span> <span class="nav-text">Zend OPcache</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件上传"><span class="nav-number">4.</span> <span class="nav-text">文件上传</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#最长执行时间"><span class="nav-number">5.</span> <span class="nav-text">最长执行时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#处理会话"><span class="nav-number">6.</span> <span class="nav-text">处理会话</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓冲输出"><span class="nav-number">7.</span> <span class="nav-text">缓冲输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#真实路径缓存"><span class="nav-number">8.</span> <span class="nav-text">真实路径缓存</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

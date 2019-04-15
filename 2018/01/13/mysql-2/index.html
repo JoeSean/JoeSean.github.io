@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="MYSQL," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="数据库基本原理图如下：">
+<meta name="keywords" content="MYSQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从程序员的角度深入理解Mysql">
+<meta property="og:url" content="http://yoursite.com/2018/01/13/mysql-2/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="数据库基本原理图如下：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/01/13/mysql-2/16.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/01/13/mysql-2/17.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/01/13/mysql-2/18.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/01/13/mysql-2/19.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/01/13/mysql-2/20.jpg">
+<meta property="og:updated_time" content="2019-04-15T01:40:52.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从程序员的角度深入理解Mysql">
+<meta name="twitter:description" content="数据库基本原理图如下：">
+<meta name="twitter:image" content="http://yoursite.com/2018/01/13/mysql-2/16.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/01/13/mysql-2/"/>
+
+
+
+
+
+  <title>从程序员的角度深入理解Mysql | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/13/mysql-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">从程序员的角度深入理解Mysql</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-13T03:17:19-05:00">
+                2018-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>数据库基本原理图如下：<br><img src="/2018/01/13/mysql-2/16.jpg" alt="p16"><br><a id="more"></a></p>
+<h3 id="1-数据库的组成：存储-实例"><a href="#1-数据库的组成：存储-实例" class="headerlink" title="1.数据库的组成：存储 + 实例"></a>1.数据库的组成：存储 + 实例</h3><p>不必多说，数据当然需要存储；存储了还不够，显然需要提供程序对存储的操作进行封装，对外提供增删改查的API，即实例。  </p>
+<p>一个存储，可以对应多个实例，这将提高这个存储的负载能力以及高可用；多个存储可以分布在不同的机房、地域，将实现容灾。</p>
+<h3 id="2-按Block-or-Page读取数据"><a href="#2-按Block-or-Page读取数据" class="headerlink" title="2.按Block or Page读取数据"></a>2.按Block or Page读取数据</h3><p>用大腿想也知道，数据库不可能按行读取数据（Why? ^_^）。实质上，数据库，如Oracle/MySQL，都是基于固定大小（比如16K）的物理块（Block or Page，我这里就不区分统一称为Block）来实现调度和管理的。要知道Block是数据库的概念，如何对应到文件系统呢？显然需要指出“这个Block的地址在哪里”，当查找到地址后，读取固定大小的数据就相当于完成了Block的读取了。</p>
+<p>数据库很聪明的，它不会仅仅只读取需要读取的Block，它还会替我们把附近的Block块都读取加载至内存。实际上，这是为了减少IO次数，提高命中率。事实上，一个Block块的附近Block也是热点数据，这种处理方式很有必要！</p>
+<h3 id="3-磁盘IO是数据库的性能瓶颈"><a href="#3-磁盘IO是数据库的性能瓶颈" class="headerlink" title="3.磁盘IO是数据库的性能瓶颈"></a>3.磁盘IO是数据库的性能瓶颈</h3><p>毫无疑问，数据在磁盘上，少不了磁盘IO。什么磁头旋转，定位磁道，寻址的过程，就不说了，我们是程序员，也管不了这些。但是这个过程确实是非常耗时的，和内存读取不是一个数量级，所以后来出现了很多方式来减少IO，提升数据库性能。</p>
+<p>比如，增加内存，让数据库把数据更多的加载至内存。内存虽好，但也不能滥用，为什么这么说呢？假设数据库中有100G数据，如果都加载至内存，也就说数据库要管理100G磁盘数据+100G内存数据，你说累不累？（数据库要处理磁盘和内存的映射关系，数据的同步，还要对内存数据进行清理，如果涉及数据库事务，又是一系列复杂操作……）不过这里需要指出的是，为了加快内存查找速度，数据库一般对内存进行HASH存放。</p>
+<p>比如，利用索引，索引相比内存，是一个性价比非常高的东西，后文详细介绍MySQL的索引原理。</p>
+<p>比如，利用性能更好的磁盘…（和咱们就没关系呢）</p>
+<h3 id="4-提出一些问题思考下"><a href="#4-提出一些问题思考下" class="headerlink" title="4.提出一些问题思考下"></a>4.提出一些问题思考下</h3><p>为什么我们说利用delete删除一个表的数据较trancate一个表要慢？</p>
+<p>【一个按行查找删除，多费劲；一个基于Block的体系结构删除】</p>
+<p>为什么我们说要小表驱动大表？</p>
+<p>【小表驱动大表会快？什么鬼？M*N和N*M不是一样的么？有鬼的地方，就有索引！】</p>
+<h3 id="5-探索MySQL索引背后的原理"><a href="#5-探索MySQL索引背后的原理" class="headerlink" title="5.探索MySQL索引背后的原理"></a>5.探索MySQL索引背后的原理</h3><p>对于绝大数的应用系统，读写比例在10:1，甚至100:1，而且insert/update很难出现性能问题，遇到最多的，最棘手的就是select了，select优化是重中之重，显然少不了索引！</p>
+<p>说起MySQL的索引，我们会冒出很多这些东西：BTree索引/B+Tree索引/Hash索引/聚集索引/非聚集索引…这么多，晕头！</p>
+<h3 id="6-索引到底是什么，想解决什么问题？"><a href="#6-索引到底是什么，想解决什么问题？" class="headerlink" title="6.索引到底是什么，想解决什么问题？"></a>6.索引到底是什么，想解决什么问题？</h3><p>老生常谈了，官网说MySQL索引是一种数据结构，索引的目的就是为了提高查询效率。</p>
+<p>说白了，不使用索引的话，磁盘IO次数比较多！要想减少磁盘IO次数，怎么办？</p>
+<p>我们想通过不断缩小想要获取的数据的范围来筛选出最终想要的结果，把每次查找数据的磁盘IO次数控制在一个很小的数量级，最好是常数数量级。</p>
+<p>为了应对上述问题，B+Tree索引出来了！</p>
+<h3 id="7-Hello，B-Tree"><a href="#7-Hello，B-Tree" class="headerlink" title="7.Hello，B+Tree"></a>7.Hello，B+Tree</h3><p>在MySQL中，不同存储引擎对索引的实现方式是不同的，这里将重点分析MyISAM和Innodb。</p>
+<p><img src="/2018/01/13/mysql-2/17.jpg" alt="p17"></p>
+<h3 id="8-MyISAM引擎的B-Tree索引结构"><a href="#8-MyISAM引擎的B-Tree索引结构" class="headerlink" title="8.MyISAM引擎的B+Tree索引结构"></a>8.MyISAM引擎的B+Tree索引结构</h3><p>我们知道对于MyISAM引擎而言，数据文件和索引文件是分离的。从图中也可以看出，通过索引查找到后，就得到了数据的物理地址，然后根据地址定位数据文件中的记录即可。这种方式也叫”非聚集索引”。</p>
+<p>而对于Innodb引擎而言，数据文件本身是索引文件！通俗点说，叶子节点上，MyISAM存储的是记录的物理地址，而Innodb上存储的是数据内容，这种方式即”聚集索引”。</p>
+<p>另外一点需要注意的是，对于Innodb而言，主键索引中叶子节点存储的是数据内容，而普通索引的叶子节点中存储的是主键值！也就是说，对于Innodb的普通索引字段查找，先通过普通索引的B+Tree查找到主键后，然后通过主键索引的B+Tree进行查找。从这里你可以看出，对于Innodb而言，主键的建立非常重要！</p>
+<p>而对于MyISAM而言，主键索引和普通索引仅仅的区别在于主键只需要查找到一条记录即可停止，而普通索引允许重复，找到一条记录后需要继续查找，在结构上没有区别，如上图所示。</p>
+<h3 id="9-深入B-Tree"><a href="#9-深入B-Tree" class="headerlink" title="9.深入B+Tree"></a>9.深入B+Tree</h3><blockquote>
+<p>提几个问题：<br>为什么B+Tree把真实的数据放到叶子节点，而不是内层节点？<br>为什么我们说索引字段要尽可能短，最好是单调递增的？<br>为什么复合索引存在最左匹配原则？<br>范围查询（&gt;,&lt;,between,like）对最左匹配有什么影响？  </p>
+</blockquote>
+<p>关于B+Tree的一些数学理论，咱们就不玩了，至少一点可以肯定的是：数据表的数据量N=F(树的高度h，每个Block存储的索引的个数m)。在N一定的情况下，索引字段越小，那么m会越大，这意味着h将越小！树越低，当然查找的更快！</p>
+<p>如果内层节点存放真实的数据，显然m会变小，树将变高。</p>
+<p>在实际应用中，我们应该尽可能采用单调递增的字段作为主键，一方面不会使得索引的数据结构变大，减小了索引占用的空间；另一方面也不会频繁的分裂B+Tree，使得效率下降。</p>
+<p>比如复合索引(name,age,sex)，B+Tree会优先比较name来确定下一步的搜索方向。如果突然来了个(age,sex)，根本上就无从下手。这也是符合常理的，对于一本书，我们说“找到第几章第几节的XXX”，从没有听说过“找到第几节的XXX”！这是复合索引的重要特性，即最左匹配特性。</p>
+<p>假设存在复合索引(name,age,sex)，我们在进行select的时候，并没有按照这个顺序进行，而是sex = ‘man’ and name = ‘zfz’ and age = 27，是否会使用索引呢？数据库是很聪明的，在SQL优化的时候，会自动帮助我们调整！但是如果缺失了复合索引的第一列，数据库也将无能为力呢。</p>
+<p>对于最左匹配，MySQL会一直向右匹配直到遇到范围查询就停止匹配。什么意思？比如复合索引(name,age,sex)，对于name = ‘zhangfengzhe’ and age &gt; 26 and sex = ‘man’，实际上只利用到了复合索引的name列。</p>
+<h3 id="10-想利用索引，就得“干净”"><a href="#10-想利用索引，就得“干净”" class="headerlink" title="10.想利用索引，就得“干净”"></a>10.想利用索引，就得“干净”</h3><p>什么叫“干净”？就是不要让索引参与计算！比如在索引上应用函数，很可能导致索引失效。为什么呢？</p>
+<p>其实不用想，B+Tree上存储的是数据，要比较的话，需要把所有的数据都应用上函数，显然成本太大。</p>
+<p>想建立索引，看看区分度</p>
+<p>索引虽然物美价廉，但是也别乱来。count(distinct col) / count(*)可以算一下col的区分度，显然对于主键而言，就是1。区分度太低的话，可以考虑下，是否还有必要建立索引呢？</p>
+<h3 id="11-Hash索引"><a href="#11-Hash索引" class="headerlink" title="11.Hash索引"></a>11.Hash索引</h3><p>这里并不是要深入分析Hash索引，而是要说明一下Hash的思想真是无处不在！</p>
+<p>在MySQL的Memory存储引擎中，存在hash函数，给一个key，通过hash函数进行计算得到地址，所以通常情况下，hash索引查找，会非常快，O（1）的速度。但是也存在hash冲突，和HashMap一样，通过单链表的形式解决。</p>
+<p>思考下，hash索引是否支持范围查询呢？</p>
+<p>显然是不支持的，它只能给一个KEY去查找。就如同HashMap一样，查找key包含”zhangfengzhe”的，会很快么？</p>
+<h3 id="12-SQL优化神器：explain"><a href="#12-SQL优化神器：explain" class="headerlink" title="12.SQL优化神器：explain"></a>12.SQL优化神器：explain</h3><p>SQL优化的场景很多，网上的技巧也很多，完全记不住！</p>
+<p>要想彻底解决这个问题，我想只有把索引背后的数据结构和原理做适当的理解，遇到书写SQL或者SQL慢查询的时候，我们有基础去分析，再利用好explain工具去验证，就应该问题不大呢。</p>
+<p>explain查询的结果，可以告诉你哪些索引正在被使用，表是如何被扫描的等等。这里我将演示个Demo。</p>
+<p>数据表student：</p>
+<p><img src="/2018/01/13/mysql-2/18.jpg" alt="p18"></p>
+<p>注意复合索引(age,address)</p>
+<p><img src="/2018/01/13/mysql-2/19.jpg" alt="p19"></p>
+<p>符合最左前缀匹配</p>
+<p><img src="/2018/01/13/mysql-2/20.jpg" alt="p20"></p>
+<p>复合索引失效</p>
+<p><em>OK，到这里，准备结束了，查询容易，优化不易，且写且珍惜！</em></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MYSQL/" rel="tag"># MYSQL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/10/mysql-1/" rel="next" title="MySQL性能优化的最佳21条经验">
+                <i class="fa fa-chevron-left"></i> MySQL性能优化的最佳21条经验
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/20/mysql-3/" rel="prev" title="MySQL中EXPLAIN结果的参数详解">
+                MySQL中EXPLAIN结果的参数详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-数据库的组成：存储-实例"><span class="nav-number">1.</span> <span class="nav-text">1.数据库的组成：存储 + 实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-按Block-or-Page读取数据"><span class="nav-number">2.</span> <span class="nav-text">2.按Block or Page读取数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-磁盘IO是数据库的性能瓶颈"><span class="nav-number">3.</span> <span class="nav-text">3.磁盘IO是数据库的性能瓶颈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-提出一些问题思考下"><span class="nav-number">4.</span> <span class="nav-text">4.提出一些问题思考下</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-探索MySQL索引背后的原理"><span class="nav-number">5.</span> <span class="nav-text">5.探索MySQL索引背后的原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-索引到底是什么，想解决什么问题？"><span class="nav-number">6.</span> <span class="nav-text">6.索引到底是什么，想解决什么问题？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-Hello，B-Tree"><span class="nav-number">7.</span> <span class="nav-text">7.Hello，B+Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-MyISAM引擎的B-Tree索引结构"><span class="nav-number">8.</span> <span class="nav-text">8.MyISAM引擎的B+Tree索引结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-深入B-Tree"><span class="nav-number">9.</span> <span class="nav-text">9.深入B+Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-想利用索引，就得“干净”"><span class="nav-number">10.</span> <span class="nav-text">10.想利用索引，就得“干净”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-Hash索引"><span class="nav-number">11.</span> <span class="nav-text">11.Hash索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-SQL优化神器：explain"><span class="nav-number">12.</span> <span class="nav-text">12.SQL优化神器：explain</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

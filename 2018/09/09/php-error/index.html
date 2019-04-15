@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="PHP," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="PHP（PHP_VERSION &amp;gt;= 7） 的 Error / Exception 的捕获与处理还是值得一说的">
+<meta name="keywords" content="PHP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP完善的Error&#x2F; Exception的捕获与处理">
+<meta property="og:url" content="http://yoursite.com/2018/09/09/php-error/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="PHP（PHP_VERSION &amp;gt;= 7） 的 Error / Exception 的捕获与处理还是值得一说的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-04-12T09:23:19.735Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PHP完善的Error&#x2F; Exception的捕获与处理">
+<meta name="twitter:description" content="PHP（PHP_VERSION &amp;gt;= 7） 的 Error / Exception 的捕获与处理还是值得一说的">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/09/php-error/"/>
+
+
+
+
+
+  <title>PHP完善的Error/ Exception的捕获与处理 | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/09/php-error/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">PHP完善的Error/ Exception的捕获与处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-09T01:09:12-04:00">
+                2018-09-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>PHP（PHP_VERSION &gt;= 7） 的 Error / Exception 的捕获与处理还是值得一说的<a id="more"></a>，优雅处理错误与异常，在提升框架友好度的同时，也提升了开发效率。</p>
+<h3 id="PHP-错误等级"><a href="#PHP-错误等级" class="headerlink" title="PHP 错误等级"></a>PHP 错误等级</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"># 系统级用户代码的一些错误类型 可由 try ... catch ... 捕获</span><br><span class="line">E_PARSE          解析时错误 语法解析错误 少个分号 多个逗号一类的 致命错误</span><br><span class="line">E_ERROR          运行时错误 比如调用了未定义的函数或方法 致命错误</span><br><span class="line"></span><br><span class="line"># 系统级用户代码的一些错误类型 可由 set_error_handler 捕获处理</span><br><span class="line">E_WARNING        运行时警告 调用了未定义的变量</span><br><span class="line">E_NOTICE         运行时提醒                  </span><br><span class="line">E_DEPRECATED     运行时已废弃的函数或方法</span><br><span class="line"></span><br><span class="line"># 用户级自定义错误 可由 trigger_error 触发 可由 set_error_handler 捕获处理</span><br><span class="line">E_USER_ERROR      用户自定义错误 致命错误 未处理也会导致程序退出</span><br><span class="line">E_USER_WARNING</span><br><span class="line">E_USER_NOTICE</span><br><span class="line">E_USER_DEPRECATED</span><br><span class="line"></span><br><span class="line">==========================开发中常遇到/不常遇到分割线=======================</span><br><span class="line"></span><br><span class="line"># Zend Engine 内部的一些错误 应该也能通过 try ... catch ... 捕获 略难测试</span><br><span class="line">E_CORE_ERROR</span><br><span class="line">E_CORE_WARNING</span><br><span class="line">E_COMPILE_ERROR</span><br><span class="line">E_COMPILE_WARNING</span><br><span class="line"></span><br><span class="line">#编码标准化警告(建议如何修改以向前兼容)</span><br><span class="line">E_STRICT          部分 try ... catch ... 部分 set_error_handler</span><br><span class="line">E_RECOVERABLE_ERROR</span><br></pre></td></tr></table></figure>
+<p>以上为 PHP 的一些错误监听级别，常用于 error_reporting 和 set_error_handler 的监听级别设定。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">error_reporting(E_ALL &amp; ~E_NOTICE);</span><br><span class="line"></span><br><span class="line">set_error_handler(function handler($error_no, $error_msg, $error_file, $error_line) &#123;</span><br><span class="line">&#125;, E_ALL | E_STRICT);</span><br></pre></td></tr></table></figure>
+<p>PHP 的错误处理可以分为：<em>用户自定义错误处理</em> 和 <em>PHP标准错误处理</em>，两者的关系相当于两层错误捕捉器，系统会先检测是否定义了 用户自定义错误处理，否则会将错误交由 PHP标准错误处理 进行处理。</p>
+<p>注意：PHP 的所有的 Exception 都属于 E_ERROR 级的错误，抛出时如果没有被捕获而交由 PHP 标准错误处理的话，就会 Fatal Error 导致程序退出执行。当然，PHP7 为了细化错误级别，划分了 Error 级 Error 的衍生类，这些也都属于 E_ERROR 级别的错误。</p>
+<h3 id="PHP-标准错误处理"><a href="#PHP-标准错误处理" class="headerlink" title="PHP 标准错误处理"></a>PHP 标准错误处理</h3><p>PHP 标准错误处理是在一些错误没有被用户捕获处理（没有被 try … catch … 或 set_error_handler 捕获处理）时，错误 会递交至 PHP 标准错误处理。相关的设置项如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">// 监听捕获的错误级别</span><br><span class="line">error_reporting(E_ALL);</span><br><span class="line"></span><br><span class="line">// 是否开启错误信息回显 将错误输出至标准输出（浏览器/命令行）</span><br><span class="line">ini_set(&apos;display_errors&apos;, true);</span><br><span class="line"></span><br><span class="line">// 死否开启错误日志记录 将错误记录至 ini：error_log 指定文件</span><br><span class="line">ini_set(&apos;log_errors&apos;, true);</span><br><span class="line">ini_set(&apos;error_log&apos;, __DIR__ . &apos;/php-errors.log&apos;);</span><br></pre></td></tr></table></figure>
+<h4 id="1、error-reporting-level"><a href="#1、error-reporting-level" class="headerlink" title="1、error_reporting([level])"></a>1、error_reporting([level])</h4><p>获取或设定当前错误的监听级别。要注意，是获取或设定的 PHP 标准错误处理 的级别，不会有效于 try…catch… 或 set_error_handler。</p>
+<h4 id="2、display-errors"><a href="#2、display-errors" class="headerlink" title="2、display_errors"></a>2、display_errors</h4><p>是否将错误信息回显至标准输出。默认开启，生产环境下强烈建议 关闭 此项。</p>
+<h4 id="3、log-errors"><a href="#3、log-errors" class="headerlink" title="3、log_errors"></a>3、log_errors</h4><p>是否记录错误日志。默认关闭，生产环境下强烈建议 开启 此项。</p>
+<h4 id="4、error-log"><a href="#4、error-log" class="headerlink" title="4、error_log"></a>4、error_log</h4><p>错误日志的保存文件。注意：如果路径无效，display_errors 会被强制开启。</p>
+<h3 id="PHP-用户自定义错误处理"><a href="#PHP-用户自定义错误处理" class="headerlink" title="PHP 用户自定义错误处理"></a>PHP 用户自定义错误处理</h3><h4 id="1、set-error-handler"><a href="#1、set-error-handler" class="headerlink" title="1、set_error_handler"></a>1、set_error_handler</h4><p>set_error_handler 并非可以捕获所有错误，且 set_error_handler 不会终止程序继续执行。处理后若返回 false，则错误会被继续递交给 PHP 标准错误处理 流程。</p>
+<p>可以捕获： E_WARNING &amp; E_NOTICE &amp; E_DEPRCATED &amp; E_USER_<em> &amp; 部分 E_STRICT 级的错误。<br>无法捕获： E_ERROR &amp; E_PARSE &amp; E_CORE_</em> &amp; E_COMPLIE_* 级的错误。</p>
+<p>有自身的错误捕获级别，默认E_ALL | E_STRICT，且不受 error_reporting 设定的级别的影响。这里要理解，用户自定义错误处理 和 PHP 标准错误处理 是两层错误捕捉器，有独立的捕获级别。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">// 用户自定义错误处理</span><br><span class="line">set_error_handler(function ($error_no, $error_msg, $error_file, $error_line) &#123;</span><br><span class="line">    switch ($error_no) &#123;</span><br><span class="line">        case E_WARNING:</span><br><span class="line">            $level_tips = &apos;PHP Warning: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_NOTICE:</span><br><span class="line">            $level_tips = &apos;PHP Notice: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_DEPRECATED:</span><br><span class="line">            $level_tips = &apos;PHP Deprecated: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_ERROR:</span><br><span class="line">            $level_tips = &apos;User Error: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_WARNING:</span><br><span class="line">            $level_tips = &apos;User Warning: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_NOTICE:</span><br><span class="line">            $level_tips = &apos;User Notice: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_DEPRECATED:</span><br><span class="line">            $level_tips = &apos;User Deprecated: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_STRICT:</span><br><span class="line">            $level_tips = &apos;PHP Strict: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        default:</span><br><span class="line">            $level_tips = &apos;Unkonw Type Error: &apos;;</span><br><span class="line">            break;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // do some handle</span><br><span class="line">    $error = $level_tips . $error_msg . &apos; in &apos; . $error_file . &apos; on &apos; . $error_line;</span><br><span class="line">    echo $error . PHP_EOL;</span><br><span class="line"></span><br><span class="line">    // 如果 return false 则错误会继续递交给 PHP 标准错误处理</span><br><span class="line">    // return false;</span><br><span class="line">&#125;, E_ALL | E_STRICT);</span><br><span class="line"></span><br><span class="line">trigger_error(&quot;用户自定义 notice error&quot;);</span><br><span class="line">trigger_error(&quot;用户自定义 warning error&quot;, E_USER_WARNING);</span><br><span class="line">trigger_error(&quot;用户自定义 deprecated error&quot;, E_USER_DEPRECATED);</span><br><span class="line">trigger_error(&quot;用户自定义 fatal error&quot;, E_USER_ERROR);</span><br></pre></td></tr></table></figure>
+<h4 id="2、trigger-error"><a href="#2、trigger-error" class="headerlink" title="2、trigger_error"></a>2、trigger_error</h4><p>trigger_error 用来触发用户级别的自定义错误，可以使用 set_error_handler 捕获处理。<br>默认的错误级别是 E_USER_NOTICE，我们可以自定义。<br>这里需要注意的是：E_USER_ERROR 级别的错误如果被 PHP 标准错误处理 捕获，脚本也会退出执行错误。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">error_reporting(E_ALL);</span><br><span class="line">ini_set(&apos;display_errors&apos;, true);</span><br><span class="line"></span><br><span class="line">trigger_error(&apos;用户自定义 notice error&apos;, E_USER_NOTICE);</span><br><span class="line">echo &apos;continue A&apos; . PHP_EOL;</span><br><span class="line">trigger_error(&apos;用户自定义 warning error&apos;, E_USER_WARNING);</span><br><span class="line">echo &apos;continue B&apos; . PHP_EOL;</span><br><span class="line">trigger_error(&apos;用户自定义 deprecated error&apos;, E_USER_DEPRECATED);</span><br><span class="line">echo &apos;continue C&apos; . PHP_EOL;</span><br><span class="line">trigger_error(&apos;用户自定义 fatal error&apos;, E_USER_ERROR);</span><br><span class="line">echo &apos;D point will not be executed&apos; . PHP_EOL;</span><br></pre></td></tr></table></figure>
+<h4 id="3、set-exception-handler"><a href="#3、set-exception-handler" class="headerlink" title="3、set_exception_handler"></a>3、set_exception_handler</h4><p>set_exception_handler 用户自定义捕获异常 handler，异常没有被 try … catch 捕获处理的话会被抛出，此时系统会检查上下文是否注册了 set_exception_handler。<br>如果未注册 则进入 PHP 标准错误处理 致命错误退出执行。<br>如果已注册 则进入 set_exception_handler 处理 程序依然会退出执行。<br>而 try … catch … 捕获异常后仍不会退出执行，故强烈建议将有异常的执行逻辑放入 try … catch 中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">// 捕获异常后程序会退出执行</span><br><span class="line">set_exception_handler(function ($exception) &#123;</span><br><span class="line">    echo $exception;</span><br><span class="line">    // 此处程序会退出执行 异常到此结束 并不会交给 PHP 标准异常处理</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">throw new Exception(&apos;hello world!&apos;);</span><br><span class="line"></span><br><span class="line">echo &apos;will i be executed？&apos;;</span><br></pre></td></tr></table></figure>
+<h4 id="4、try-…-catch-…"><a href="#4、try-…-catch-…" class="headerlink" title="4、try … catch …"></a>4、try … catch …</h4><p>开发中用户层面的 set_error_hanlder 无法捕获的错误还剩下 E_ERROR 和 E_PARSE 两个级别，使用 try … catch … 则可以将这俩货捕捉到。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">来个小插曲：大家对 E_PARSE 熟悉又陌生，可能经常遇到（各大框架都有此级别错误捕获提示），但自己不知道如何捕获，其实首先要理解 E_PARSE 错误的发生时段。</span><br><span class="line"></span><br><span class="line">E_PARSE：即语法解析错误，Syntax Error then Parse Error，PHP 将脚本载入 Zend Engine 后，最开始要做的就是检查基本语法是否有误，无误才会调用解释器，一行行的开始解释运行。</span><br><span class="line"></span><br><span class="line">这里就有个鸡生蛋，蛋生鸡的问题了。如下代码：</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">//认为关闭了错误捕获 不应该有错误报出才对</span><br><span class="line">error_reporting(0);</span><br><span class="line"></span><br><span class="line">echo &apos;i lose semicolon&apos;</span><br><span class="line">然后很多人会诧异，明明关闭了错误提示，为什么还会报错？</span><br><span class="line"></span><br><span class="line">没错，代码的确正确的书写了关闭错误提示的意图。但还没被执行到时，脚本就因为最初始的语法解析错误，被 Zend Engine 抛出 Parse Error 终止执行了。同时还要理解，PHP include / require 只有在真的解释到这一行代码时，引用的文件才会被载入--解析--解释执行。</span><br><span class="line"></span><br><span class="line">所以，我们需要有一个无错的 try ... catch ... 容器，在容器中便可以对后续引用的外部脚本进行 E_PARSE 错误捕捉。</span><br><span class="line"></span><br><span class="line">例如框架自身是一个无错的运行容器，开发者自写的 MVC 是被 include / require 到此容器中 解析 -- 解释执行 的，用户代码的语法错误即会被容器的 try ... catch ... 优雅的捕获到。</span><br></pre></td></tr></table></figure>
+<p>try … catch … 的错误捕获级别同样不受 error_reporting 影响，我们可以通过 多层 catch 细化各类型的错误。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">// typeError demo</span><br><span class="line">function foo(): int</span><br><span class="line">&#123;</span><br><span class="line">    return &apos;hello world&apos;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">try &#123;</span><br><span class="line">    //foo();</span><br><span class="line">    // echo strlen(&apos;hello world&apos;, 233);</span><br><span class="line">&#125; catch (\ErrorException $errorException) &#123;</span><br><span class="line">    // 捕获错误异常</span><br><span class="line">    echo &apos;ErrorException: &apos; . $errorException . PHP_EOL;</span><br><span class="line">&#125; catch (\Exception $exception) &#123;</span><br><span class="line">    // 捕获异常</span><br><span class="line">    echo &apos;Exception: &apos; . $exception . PHP_EOL;</span><br><span class="line">&#125; catch (\TypeError $typeError) &#123;</span><br><span class="line">    // 捕获类型错误 返回值/参数不正确</span><br><span class="line">    echo &apos;Type Error: &apos; . $typeError . PHP_EOL;</span><br><span class="line">&#125; catch (\ParseError $parseError) &#123;</span><br><span class="line">    // 捕获解析错误 语法错误</span><br><span class="line">    echo &apos;Parse Error: &apos; . $parseError . PHP_EOL;</span><br><span class="line">&#125; catch (\DivisionByZeroError $divisionByZeroError) &#123;</span><br><span class="line">    // 除 0 无法捕获 但 除 0 取余可以捕获 = = 很无奈</span><br><span class="line">    echo &apos;Division By Zero Error: &apos; . $divisionByZeroError . PHP_EOL;</span><br><span class="line">&#125; catch (\Error $error) &#123;</span><br><span class="line">    // 基本错误</span><br><span class="line">    echo &apos;Error: &apos; . $error . PHP_EOL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里要注意的是，DivisionByZeroError 在 PHP7 中依然无法隐式的完美捕获。准确的说：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">当 x / 0 时抛出一个 E_WARNING 级别的错误，我们可以 set_error_handler 捕获，然后再判断错误为</span><br><span class="line">&apos;Devision by zero&apos; 时抛出一个 ErrorException 的异常交由 try ... catch ... 捕获处理即可。</span><br><span class="line">当 x % 0 时才会直接抛出 DivisionByZeroError 的错误。</span><br></pre></td></tr></table></figure>
+<p>当然，你也可以显示的判断除数为 0 来决定是否抛出个 DivisionByZeroError</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">try &#123;</span><br><span class="line">    $divisor = 0;</span><br><span class="line">    if ($divisor == 0) &#123;</span><br><span class="line">        throw new DivisionByZeroError(&apos;Division by zero！&apos;);</span><br><span class="line">    &#125;</span><br><span class="line">    echo 233 / $divisor;</span><br><span class="line">&#125; catch (\DivisionByZeroError $error) &#123;</span><br><span class="line">    echo $error;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="PHP-预定义的-Error-和-Exception"><a href="#PHP-预定义的-Error-和-Exception" class="headerlink" title="PHP 预定义的 Error 和 Exception"></a>PHP 预定义的 Error 和 Exception</h3><p>Predefined Exceptions 预定义异常 可由系统自动抛出<br><a href="http://php.net/manual/en/reserved.exceptions.php" target="_blank" rel="noopener">http://php.net/manual/en/reserved.exceptions.php</a>  </p>
+<blockquote>
+<p>Exception<br> ErrorException<br> Error<br> ArgumentCountError<br> ArithmeticError<br> AssertionError<br> DivisionByZeroError<br> ParseError<br> TypeError  </p>
+</blockquote>
+<p> SPL Exceptions SPL 标准规范异常 可供开发者规范代码自行抛出<br> <a href="http://php.net/manual/en/spl.exceptions.php" target="_blank" rel="noopener">http://php.net/manual/en/spl.exceptions.php</a>  </p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">BadFunctionCallException</span><br><span class="line">BadMethodCallException</span><br><span class="line">DomainException</span><br><span class="line">InvalidArgumentException</span><br><span class="line">LengthException</span><br><span class="line">LogicException</span><br><span class="line">OutOfBoundsException</span><br><span class="line">OutOfRangeException</span><br><span class="line">OverflowException</span><br><span class="line">RangeException</span><br><span class="line">RuntimeException</span><br><span class="line">UnderflowException</span><br><span class="line">UnexpectedValueException</span><br></pre></td></tr></table></figure>
+<h3 id="完善的错误和异常捕获"><a href="#完善的错误和异常捕获" class="headerlink" title="完善的错误和异常捕获"></a>完善的错误和异常捕获</h3><p> 下面的代码基本呈现和捕获了 PHP7 提供的所有预定义错误和异常 及 PHP 标准错误处理<br> 1、使用 try … catch 捕获 E_ERROR 及 E_PARSE 级别的 Error (及Error 类的衍生类) 和 Exception (ErrorException)。<br> 2、对于 try … catch 无法捕获的 E_WARNING，E_NOTICE，E_DEPRECATED，E_USER_*，部分 E_STRICTED 级别的错误，我们使用 set_error_handler 捕获处理，捕获后我们其实可以将错误信息封装到 ErrorException 中并抛出，这样处理流又会交给 try … catch，可以统一处理，比如Yii2框架就是这样处理的。<br> 3、set_exception_handler 则是捕获在没有 try … catch 中执行的代码的异常，所以强烈建议一些存在异常 风险的逻辑要放入 try … catch 中。  </p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">// php &gt;= 7</span><br><span class="line">// PHP 标准错误处理 捕获级别</span><br><span class="line">error_reporting(E_ALL);</span><br><span class="line">// 是否将 标准错误处理 捕获的错误回显在 stdout 上</span><br><span class="line">ini_set(&apos;display_errors&apos;, false);</span><br><span class="line">// 开启错误日志</span><br><span class="line">ini_set(&apos;log_errors&apos;, true);</span><br><span class="line">// 如果错误日志路径无效 display_errors 依然会强制打开</span><br><span class="line">ini_set(&apos;error_log&apos;, __DIR__ . &apos;/php-errors.log&apos;);</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * set_error_handler 用户自定义错误 handler</span><br><span class="line"> * 能够捕获 E_WARNING E_NOTICE E_DEPRECATED E_USER_* E_STRICT 级的错误</span><br><span class="line"> * 无法捕获 E_ERROR E_PARSE E_CORE_* E_COMPILE_* [DivisionByZeroError TypeError] 级的错误</span><br><span class="line"> */</span><br><span class="line">set_error_handler(function ($error_no, $error_msg, $error_file, $error_line) &#123;</span><br><span class="line">    switch ($error_no) &#123;</span><br><span class="line">        case E_WARNING:</span><br><span class="line">            // x / 0 错误 PHP7 依然不能很友好的自动捕获 只会产生 E_WARNING 级的错误</span><br><span class="line">            // 捕获判断后 throw new DivisionByZeroError($error_msg)</span><br><span class="line">            // 或者使用 intdiv(x, 0) 方法 会自动抛出 DivisionByZeroError 的错误</span><br><span class="line">            if (strcmp(&apos;Division by zero&apos;, $error_msg) == 0) &#123;</span><br><span class="line">                throw new \DivisionByZeroError($error_msg);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            $level_tips = &apos;PHP Warning: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_NOTICE:</span><br><span class="line">            $level_tips = &apos;PHP Notice: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_DEPRECATED:</span><br><span class="line">            $level_tips = &apos;PHP Deprecated: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_ERROR:</span><br><span class="line">            $level_tips = &apos;User Error: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_WARNING:</span><br><span class="line">            $level_tips = &apos;User Warning: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_NOTICE:</span><br><span class="line">            $level_tips = &apos;User Notice: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_USER_DEPRECATED:</span><br><span class="line">            $level_tips = &apos;User Deprecated: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        case E_STRICT:</span><br><span class="line">            $level_tips = &apos;PHP Strict: &apos;;</span><br><span class="line">            break;</span><br><span class="line">        default:</span><br><span class="line">            $level_tips = &apos;Unkonw Type Error: &apos;;</span><br><span class="line">            break;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // do some handle</span><br><span class="line">    $error = $level_tips . $error_msg . &apos; in &apos; . $error_file . &apos; on &apos; . $error_line;</span><br><span class="line">    echo $error . PHP_EOL;</span><br><span class="line">    </span><br><span class="line">    // or throw a ErrorException back to try ... catch block</span><br><span class="line">    // throw new \ErrorException($error);</span><br><span class="line">    </span><br><span class="line">    // 如果 return false 则错误会继续递交给 PHP 标准错误处理</span><br><span class="line">    // return false;</span><br><span class="line">&#125;, E_ALL | E_STRICT);</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * set_exception_handler 用户自定义捕获异常 handler</span><br><span class="line"> * 异常没有被 try ... catch ... 捕获处理的话会被抛出</span><br><span class="line"> * 此时系统会检查上下文是否注册了 set_exception_handler</span><br><span class="line"> * 如果未注册 则进入 PHP 标准异常处理 致命错误退出执行</span><br><span class="line"> * 如果已注册 则进入 set_exception_handler 处理 程序依然会退出执行</span><br><span class="line"> * 而 try ... catch ... 捕获异常后仍不会退出执行</span><br><span class="line"> * 故强烈建议将有异常的执行逻辑放入 try ... catch 中</span><br><span class="line"> */</span><br><span class="line">set_exception_handler(function ($exception) &#123;</span><br><span class="line">    echo $exception;</span><br><span class="line">    // 此处程序会退出执行 异常到此结束 并不会交给 PHP 标准异常处理</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">// type error demo</span><br><span class="line">function foo(): int</span><br><span class="line">&#123;</span><br><span class="line">    return &apos;result type error&apos;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 捕获 E_ERROR E_PARSE 级的 Error</span><br><span class="line">// 捕获 Exception</span><br><span class="line">try &#123;</span><br><span class="line">    // 加载外部文件的正确写法</span><br><span class="line">    $file = __DIR__ . &apos;/bar.inc.php&apos;;</span><br><span class="line">    if (file_exists($file)) &#123;</span><br><span class="line">        require_once $file;</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        throw new Exception($file . &apos; not exists!&apos;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // ParseError 解析错误</span><br><span class="line">    // bar.inc.php 的内容要有基本的语法错误: &lt;?php echo &apos;some syntax error&apos;</span><br><span class="line"></span><br><span class="line">    // ArgumentCountError extends TypeError PHP &gt;= 7.1.0</span><br><span class="line">    // strlen 参数错误</span><br><span class="line">    echo strlen(&apos;hello world&apos;, 4);</span><br><span class="line">    </span><br><span class="line">    // TypeError 类型错误</span><br><span class="line">    // foo 要求的返回类型为 int 但 return 了 string 类型错误</span><br><span class="line">    foo();</span><br><span class="line">    </span><br><span class="line">    // DivisionByZeroError extends ArithmeticError</span><br><span class="line">    // x / 0 会抛出 E_WARNING 的异常 但不会自动抛出 DivisionByZeroError</span><br><span class="line">    // 我们可以使用 set_error_handler 进行捕获然后手动抛出 DivisionByZeroError</span><br><span class="line">    1 / 0;</span><br><span class="line">    // Integer Divison 等同于 1 / 0 可以直接抛出 DivisionByZeroError</span><br><span class="line">    intdiv(1, 0);</span><br><span class="line">    // 除 0 取余 可以直接抛出 DivisionByZeroError</span><br><span class="line">    1 % 0;</span><br><span class="line"></span><br><span class="line">    // ArithmeticError 错误</span><br><span class="line">    intdiv(PHP_INT_MIN, -1);</span><br><span class="line">    </span><br><span class="line">    // AssertionError 断言错误</span><br><span class="line">    assert(&apos;1 != 1&apos;);</span><br><span class="line"></span><br><span class="line">    // 调用未定义的函数 错误级别：E_ERROR</span><br><span class="line">    bar();</span><br><span class="line">&#125; catch (\ErrorException $errorException) &#123;</span><br><span class="line">    // 错误异常</span><br><span class="line">    // 最常用的就是将那几个非致命的错误捕获后 ErrorException 回抛到 try ... catch 中</span><br><span class="line">    echo &apos;ErrorException: &apos; . $errorException . PHP_EOL;</span><br><span class="line">&#125; catch (\Exception $exception) &#123;</span><br><span class="line">    // 异常</span><br><span class="line">    echo &apos;Exception: &apos; . $exception . PHP_EOL;</span><br><span class="line">&#125; catch (\ParseError $parseError) &#123;</span><br><span class="line">    // 解析错误 语法错误</span><br><span class="line">    echo &apos;Parse Error: &apos; . $parseError . PHP_EOL;</span><br><span class="line">&#125; catch (\ArgumentCountError $argumentCountError ) &#123;</span><br><span class="line">    // 传参非法错误 php &gt;= 7.1.0</span><br><span class="line">    echo &apos;Argument Count Error: &apos; . $argumentCountError . PHP_EOL;</span><br><span class="line">&#125; catch (\TypeError $typeError) &#123;</span><br><span class="line">    // 类型错误 返回值</span><br><span class="line">    echo &apos;Type Error: &apos; . $typeError . PHP_EOL;</span><br><span class="line">&#125; catch (\DivisionByZeroError $divisionByZeroError) &#123;</span><br><span class="line">    // x / 0 不抛出  x % 0 可以抛出</span><br><span class="line">    // x / 0 可以用 intdiv(x, 0) 代替 会抛出</span><br><span class="line">    echo &apos;Division By Zero Error: &apos; . $divisionByZeroError . PHP_EOL;</span><br><span class="line">&#125; catch (\ArithmeticError $arithmeticError) &#123;</span><br><span class="line">    // 算数运算错误 intdiv(PHP_INT_MIN, -1) 触发</span><br><span class="line">    echo &apos;Arithmetic Error: &apos; . $arithmeticError . PHP_EOL;</span><br><span class="line">&#125; catch (\AssertionError $assertionError) &#123;</span><br><span class="line">    // 断言错误</span><br><span class="line">    echo &apos;Assertion Error: &apos; . $assertionError . PHP_EOL;</span><br><span class="line">&#125; catch (\Error $error) &#123;</span><br><span class="line">    // 基本错误</span><br><span class="line">    echo &apos;Error: &apos; . $error . PHP_EOL;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">echo &quot;run finished!&quot; . PHP_EOL;</span><br></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p> 1、PHP 允许用户自定义 Error 和 Exception 的捕获与处理。如用户未捕获处理，则会递交给 PHP 标准错/异常处理，根据 errror_reporting display_errors log_erros error_log 参数决定处理方式。生产环境应关闭 display_errors 同时开启 log_errors 记录错误日志。</p>
+<p> 2、set_error_handler 可以捕获 E_WARNING &amp; E_NOTICE &amp; E_DEPRECATED &amp; E_USER_* 和 部分 E_STRICT 级的错误。set_error_handler 如果返回了 false 错误会递交给 PHP 标准错误处理。set_error_handler 不会终止程序执行。</p>
+<p> 3、trigger_error 可以用来抛出用户级的错误，且 E_USER_ERROR 效用等同于 E_ERROR，PHP 标准错误处理 捕获此级别的错误时会终止程序执行。</p>
+<p> 4、set_exception_handler 用户自定义异常捕获，捕获后程序依然会终止运行，但不会再将异常递交给 PHP 标准异常处理。</p>
+<p> 5、try … catch 可以捕获所有的 Exception 和 E_ERROR &amp; E_PARSE 级的错误。程序不会退出执行。</p>
+<p> 6、PHP 自带了一些 Predefined Exceptions，同时有规范一些 SPL Exceptions，供开发者规范自己的错误异常架构。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/PHP/" rel="tag"># PHP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/06/mysql-5/" rel="next" title="Mycat实践-2：全局序列号">
+                <i class="fa fa-chevron-left"></i> Mycat实践-2：全局序列号
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/15/swoole-study-1/" rel="prev" title="当SWOOLE遇上PHP">
+                当SWOOLE遇上PHP <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">39</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP-错误等级"><span class="nav-number">1.</span> <span class="nav-text">PHP 错误等级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP-标准错误处理"><span class="nav-number">2.</span> <span class="nav-text">PHP 标准错误处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、error-reporting-level"><span class="nav-number">2.1.</span> <span class="nav-text">1、error_reporting([level])</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、display-errors"><span class="nav-number">2.2.</span> <span class="nav-text">2、display_errors</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、log-errors"><span class="nav-number">2.3.</span> <span class="nav-text">3、log_errors</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4、error-log"><span class="nav-number">2.4.</span> <span class="nav-text">4、error_log</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP-用户自定义错误处理"><span class="nav-number">3.</span> <span class="nav-text">PHP 用户自定义错误处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、set-error-handler"><span class="nav-number">3.1.</span> <span class="nav-text">1、set_error_handler</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、trigger-error"><span class="nav-number">3.2.</span> <span class="nav-text">2、trigger_error</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、set-exception-handler"><span class="nav-number">3.3.</span> <span class="nav-text">3、set_exception_handler</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4、try-…-catch-…"><span class="nav-number">3.4.</span> <span class="nav-text">4、try … catch …</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PHP-预定义的-Error-和-Exception"><span class="nav-number">4.</span> <span class="nav-text">PHP 预定义的 Error 和 Exception</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#完善的错误和异常捕获"><span class="nav-number">5.</span> <span class="nav-text">完善的错误和异常捕获</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
