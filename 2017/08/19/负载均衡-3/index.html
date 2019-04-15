@@ -89,14 +89,14 @@
 <meta property="og:site_name" content="Sean&#39;s blog">
 <meta property="og:description" content="上回我提到的这么多服务器，他们共同需要的文件从哪里来？那么我们就需要文件服务器，文件服务器从哪里来，我们先看图了解下：">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/png/2.png">
-<meta property="og:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/png/3.png">
-<meta property="og:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/png/3.png">
-<meta property="og:updated_time" content="2019-04-12T09:23:29.672Z">
+<meta property="og:image" content="http://yoursite.com/2017/08/19/负载均衡-3/2.png">
+<meta property="og:image" content="http://yoursite.com/2017/08/19/负载均衡-3/3.png">
+<meta property="og:image" content="http://yoursite.com/2017/08/19/负载均衡-3/3.png">
+<meta property="og:updated_time" content="2019-04-15T07:02:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="负载均衡文件共享策略">
 <meta name="twitter:description" content="上回我提到的这么多服务器，他们共同需要的文件从哪里来？那么我们就需要文件服务器，文件服务器从哪里来，我们先看图了解下：">
-<meta name="twitter:image" content="http://oxp5uo96p.bkt.clouddn.com/hexo/png/2.png">
+<meta name="twitter:image" content="http://yoursite.com/2017/08/19/负载均衡-3/2.png">
 
 
 
@@ -338,8 +338,8 @@
       
         <p>上回我提到的这么多服务器，他们共同需要的文件从哪里来？<br>那么我们就需要文件服务器，文件服务器从哪里来，我们先看图了解下：</p>
 <a id="more"></a>
-<p><img src="http://oxp5uo96p.bkt.clouddn.com/hexo/png/2.png" alt="负载均衡图2"></p>
-<p><img src="http://oxp5uo96p.bkt.clouddn.com/hexo/png/3.png" alt="负载均衡图2"></p>
+<p><img src="/2017/08/19/负载均衡-3/2.png" alt="负载均衡图2"></p>
+<p><img src="/2017/08/19/负载均衡-3/3.png" alt="负载均衡图2"></p>
 <p>不管是图1还是图2都能解决问题。</p>
 <p>当你拿着这两份图给老板审批的时候，老板都会选择图2。</p>
 <p>这个涉及高层的问题，先不用去理会，今天我们主要的内容是文件服务策略。</p>
@@ -381,7 +381,7 @@
 </blockquote>
 <p>为了不用输入密码，/etc/rsync.pass加入密码<br><a href="mailto:storage@mydomain.com" target="_blank" rel="noopener">storage@mydomain.com</a></p>
 <h4 id="分布式文件系统"><a href="#分布式文件系统" class="headerlink" title="分布式文件系统"></a>分布式文件系统</h4><p>开始之前先看图.</p>
-<p><img src="http://oxp5uo96p.bkt.clouddn.com/hexo/png/3.png" alt="负载均衡图2"></p>
+<p><img src="/2017/08/19/负载均衡-3/3.png" alt="负载均衡图2"></p>
 <p>首先了解下几个概念:<br>　　1. PA:Master文件服务器（主服务器）<br>　　2. P1、P2、P3：chunk文件服务器（文件存放服务器）<br>文件介绍的也是使用moosefs，官方网站：<a href="http://www.moosefs.org/reference-guide.html#making-and-installing" target="_blank" rel="noopener">http://www.moosefs.org/reference-guide.html#making-and-installing</a><br>里面有篇中文文档，挺靠谱的。  </p>
 <p>3.1 PA安装MooseFS Master</p>
 <blockquote>
