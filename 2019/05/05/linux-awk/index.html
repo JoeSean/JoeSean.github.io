@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Linux," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Sean's blog" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="概念awk 命令处理一个或者多个文件的时候，它会依次读取文件的每一行内容, 然后对其进行处理，awk 命令默认从 stdio 标准输入获取文件内容, awk 使用一对单引号来表示 一些可执行的脚本代码，在可执行脚本代码里面，使用一对花括号来表示一段可执行代码块，可以同时存在多个代码块。 awk 的每个花括号内同时又可以有多个指令，每一个指令用分号分隔，awk 其实就是一个脚本编程语言。">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="详解 awk 工具的使用方法">
+<meta property="og:url" content="http://yoursite.com/2019/05/05/linux-awk/index.html">
+<meta property="og:site_name" content="Sean&#39;s blog">
+<meta property="og:description" content="概念awk 命令处理一个或者多个文件的时候，它会依次读取文件的每一行内容, 然后对其进行处理，awk 命令默认从 stdio 标准输入获取文件内容, awk 使用一对单引号来表示 一些可执行的脚本代码，在可执行脚本代码里面，使用一对花括号来表示一段可执行代码块，可以同时存在多个代码块。 awk 的每个花括号内同时又可以有多个指令，每一个指令用分号分隔，awk 其实就是一个脚本编程语言。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-05-24T06:31:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="详解 awk 工具的使用方法">
+<meta name="twitter:description" content="概念awk 命令处理一个或者多个文件的时候，它会依次读取文件的每一行内容, 然后对其进行处理，awk 命令默认从 stdio 标准输入获取文件内容, awk 使用一对单引号来表示 一些可执行的脚本代码，在可执行脚本代码里面，使用一对花括号来表示一段可执行代码块，可以同时存在多个代码块。 awk 的每个花括号内同时又可以有多个指令，每一个指令用分号分隔，awk 其实就是一个脚本编程语言。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/05/05/linux-awk/"/>
+
+
+
+
+
+  <title>详解 awk 工具的使用方法 | Sean's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sean's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">代码常变，初心不变</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/05/linux-awk/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Sean">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sean's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">详解 awk 工具的使用方法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-05-05T22:22:29-04:00">
+                2019-05-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>awk 命令处理一个或者多个文件的时候，它会依次读取文件的每一行内容, 然后对其进行处理，awk 命令默认从 stdio 标准输入获取文件内容, awk 使用一对单引号来表示 一些可执行的脚本代码，在可执行脚本代码里面，使用一对花括号来表示一段可执行代码块，可以同时存在多个代码块。 awk 的每个花括号内同时又可以有多个指令，每一个指令用分号分隔，awk 其实就是一个脚本编程语言。<br><a id="more"></a></p>
+<h4 id="awk-命令的基本格式"><a href="#awk-命令的基本格式" class="headerlink" title="awk 命令的基本格式"></a>awk 命令的基本格式</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk [options] &apos;program&apos; file</span><br></pre></td></tr></table></figure>
+<p>options 这个表示一些可选的参数选项，反正就是你爱用不用，不用可以拉到。。。 program 这个表示 awk 的可执行脚本代码，这个是必须要有的。 file 这个表示 awk 需要处理的文件，注意是纯文本文件，不是你的 mp3，也不是 mp4 啥的。。</p>
+<p>先来一个 awk 的使用例子热热身</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print $0&#125;&apos; /etc/passwd</span><br></pre></td></tr></table></figure>
+<p>awk 命令的可执行脚本代码使用单引号括起来，紧接着里面是一对花括号，然后花括号里面就是一些可执行的脚本代码段，当 awk 每读取一行之后，它会依次执行双引号里面的每个脚本代码段，在上面这个例子中， $0 表示当前行。当你执行了上面的命令之后，它会依次将 /etc/passwd 文件的每一行内容打印输出，你一定在想：这有个毛用，用 cat 命令也能搞定。没错！上面这个命令没个毛用，请往下看。</p>
+<h4 id="awk-自定义分隔符"><a href="#awk-自定义分隔符" class="headerlink" title="awk 自定义分隔符"></a>awk 自定义分隔符</h4><p>awk 默认的分割符为空格和制表符，我们可以使用 -F 参数来指定分隔符</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ awk -F &apos;:&apos; &apos;&#123;print $1&#125;&apos; /etc/passwd</span><br><span class="line"></span><br><span class="line"> root</span><br><span class="line"> bin</span><br><span class="line"> daemon</span><br><span class="line"> adm</span><br><span class="line"> lp</span><br><span class="line"> sync</span><br><span class="line"> shutdown</span><br><span class="line"> halt</span><br><span class="line"> mail</span><br><span class="line"> operator</span><br><span class="line"> games</span><br><span class="line"> ftp</span><br><span class="line"> nobody</span><br></pre></td></tr></table></figure>
+<p>上面的命令将 /etc/passwd 文件中的每一行用冒号 : 分割成多个字段，然后用 print 将第 1 列字段的内容打印输出</p>
+<h4 id="如何在-awk-中同时指定多个分隔符"><a href="#如何在-awk-中同时指定多个分隔符" class="headerlink" title="如何在 awk 中同时指定多个分隔符"></a>如何在 awk 中同时指定多个分隔符</h4><p>比如现在有这样一个文件 some.log 文件内容如下</p>
+<blockquote>
+<p>Grape(100g)1980<br> raisins(500g)1990<br> plum(240g)1997<br> apricot(180g)2005<br> nectarine(200g)2008  </p>
+</blockquote>
+<p> 现在我们想将上面的 some.log 文件中按照 “水果名称(重量)年份” 来进行分割<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ awk -F &apos;[()]&apos; &apos;&#123;print $1, $2, $3&#125;&apos; some.log</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>Grape 100g 1980<br> raisins 500g 1990<br> plum 240g 1997<br> apricot 180g 2005<br> nectarine 200g 2008  </p>
+</blockquote>
+<p>在 -F 参数中使用一对方括号来指定多个分隔符，awk 处理 some.log 文件时就会使用 “(“ 和 “)” 来对文件的每一行进行分割。</p>
+<h4 id="awk-内置变量的使用"><a href="#awk-内置变量的使用" class="headerlink" title="awk 内置变量的使用"></a>awk 内置变量的使用</h4><blockquote>
+<p>$0 这个表示文本处理时的当前行<br>$1 表示文本行被分隔后的第 1 个字段列<br>$2 表示文本行被分割后的第 2 个字段列<br>$3 表示文本行被分割后的第 3 个字段列<br>$n 表示文本行被分割后的第 n 个字段列<br>NR 表示文件中的行号，表示当前是第几行<br>NF 表示文件中的当前行列的个数，类似于 mysql 数据表里面每一条记录有多少个字段<br>FS 表示 awk 的输入分隔符，默认分隔符为空格和制表符，你可以对其进行自定义设置<br>OFS 表示 awk 的输出分隔符，默认为空格，你也可以对其进行自定义设置<br>FILENAME 表示当前文件的文件名称，如果同时处理多个文件，它也表示当前文件名称  </p>
+</blockquote>
+<p>比如我们有这么一个文本文件 fruit.txt 内容如下，我将用它来向你演示如何使用 awk 命令工具。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">peach    100   Mar  1997   China  </span><br><span class="line">Lemon    150   Jan  1986   America  </span><br><span class="line">Pear     240   Mar  1990   Janpan  </span><br><span class="line">avocado  120   Feb  2008   china</span><br></pre></td></tr></table></figure>
+<p> 我们来瞧一瞧下面这些简单到爆炸的例子，这个表示打印输出文件的每一整行的内容<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print $0&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line"> peach    100   Mar  1997   China  </span><br><span class="line"> Lemon    150   Jan  1986   America  </span><br><span class="line"> Pear     240   Mar  1990   Janpan  </span><br><span class="line"> avocado  120   Feb  2008   china</span><br></pre></td></tr></table></figure></p>
+<p>下面这个表示打印输出文件的每一行的第 1 列内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print $1&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line"> peach  </span><br><span class="line"> Lemon  </span><br><span class="line"> Pear  </span><br><span class="line"> avocado</span><br></pre></td></tr></table></figure></p>
+<p> 下面面这个表示打印输出文件的每一行的第 1 列、第 2 列和第 3 列内容</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print $1, $2, $3&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line"> peach 100 Mar  </span><br><span class="line"> Lemon 150 Jan  </span><br><span class="line"> Pear 240 Mar  </span><br><span class="line"> avocado 120 Feb</span><br></pre></td></tr></table></figure>
+<p> 其中加入的逗号表示插入输出分隔符，也就是默认的空格</p>
+<p> <strong>文件的每一行的每一列的内容除了可以用 print 命令打印输出以外，还可以对其进行赋值</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;$2 = &quot;***&quot;; print $0&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line"> peach *** Mar 1997 China  </span><br><span class="line"> Lemon *** Jan 1986 America  </span><br><span class="line"> Pear *** Mar 1990 Janpan  </span><br><span class="line"> avocado *** Feb 2008 china</span><br></pre></td></tr></table></figure>
+<p> 上面的例子就是表示通过对 $2 变量进行重新赋值，来隐藏每一行的第 2 列内容，并且用星号 * 来代替其输出</p>
+<p> <strong>在参数列表中加入一些字符串或者转义字符之类的东东</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print $1 &quot;\t&quot; $2 &quot;\t&quot; $3&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line"> peach   100     Mar  </span><br><span class="line"> Lemon   150     Jan  </span><br><span class="line"> Pear    240     Mar  </span><br><span class="line"> avocado 120     Feb</span><br></pre></td></tr></table></figure>
+<p> 像上面这样，你可以在 print的参数列表中加入一些字符串或者转义字符之类的东东，让输出的内容格式更漂亮，但一定要记住要使用双引号。</p>
+<p> <strong>awk 内置 NR 变量表示每一行的行号</strong><br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print NR &quot;\t&quot; $0&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line">1   peach    100   Mar  1997   China</span><br><span class="line">2   Lemon    150   Jan  1986   America</span><br><span class="line">3   Pear     240   Mar  1990   Janpan</span><br><span class="line">4   avocado  120   Feb  2008   china</span><br></pre></td></tr></table></figure></p>
+<p><strong>awk 内置 NF 变量表示每一行的列数</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print NF &quot;\t&quot; $0&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line">5   peach    100   Mar  1997   China</span><br><span class="line">5   Lemon    150   Jan  1986   America</span><br><span class="line">5   Pear     240   Mar  1990   Janpan</span><br><span class="line">5   avocado  120   Feb  2008   china</span><br></pre></td></tr></table></figure>
+<p><strong>awk 中 $NF 变量的使用</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print $NF&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line">China</span><br><span class="line">America</span><br><span class="line">Janpan</span><br><span class="line">china</span><br></pre></td></tr></table></figure></p>
+<p>上面这个 $NF 就表示每一行的最后一列，因为 NF 表示一行的总列数，在这个文件里表示有 5 列，然后在其前面加上 $ 符号，就变成了 $5 ，表示第 5 列</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print $(NF - 1)&#125;&apos; fruit.txt</span><br><span class="line"></span><br><span class="line">1997</span><br><span class="line">1986</span><br><span class="line">1990</span><br><span class="line">2008</span><br></pre></td></tr></table></figure>
+<p>上面 $(NF-1) 表示倒数第 2 列， $(NF-2) 表示倒数第 3 列，依次类推。</p>
+<p><strong>现在除了刚才说的有一个 fruit.txt 文件之外，我们又多了一个新文件叫 company.txt 内容如下</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yahoo   100 4500</span><br><span class="line">google  150 7500</span><br><span class="line">apple   180 8000</span><br><span class="line">twitter 120 5000</span><br></pre></td></tr></table></figure>
+<p><strong>我们用 fruit.txt 和 company.txt 两个文件来向你演示 awk 同时处理多个文件的时候有什么效果</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;print FILENAME &quot;\t&quot; $0&#125;&apos; fruit.txt company.txt</span><br><span class="line"></span><br><span class="line">fruit.txt       peach    100   Mar  1997   China</span><br><span class="line">fruit.txt       Lemon    150   Jan  1986   America</span><br><span class="line">fruit.txt       Pear     240   Mar  1990   Janpan</span><br><span class="line">fruit.txt       avocado  120   Feb  2008   china</span><br><span class="line">company.txt     yahoo   100 4500</span><br><span class="line">company.txt     google  150 7500</span><br><span class="line">company.txt     apple   180 8000</span><br><span class="line">company.txt     twitter 120 5000</span><br></pre></td></tr></table></figure>
+<p>当你使用 awk 同时处理多个文件的时候，它会将多个文件合并处理，变量 FILENAME 就表示当前文本行所在的文件名称。<br>看到这里是不是感觉 awk 命令的使用方法真的是简单到爆炸！</p>
+<h4 id="BEGIN-关键字的使用"><a href="#BEGIN-关键字的使用" class="headerlink" title="BEGIN 关键字的使用"></a>BEGIN 关键字的使用</h4><p>在脚本代码段前面使用 BEGIN 关键字时，它会在开始读取一个文件之前，运行一次 BEGIN 关键字后面的脚本代码段， BEGIN 后面的脚本代码段只会执行一次，执行完之后 awk 程序就会退出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;BEGIN &#123;print &quot;Start read file&quot;&#125;&apos; /etc/passwd</span><br><span class="line"></span><br><span class="line">Start read file</span><br></pre></td></tr></table></figure>
+<p>awk 脚本中可以用多个花括号来执行多个脚本代码，就像下面这样</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;BEGIN &#123;print &quot;Start read file&quot;&#125; &#123;print $0&#125;&apos; /etc/passwd</span><br><span class="line"></span><br><span class="line">Start read file</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">bin:x:1:1:bin:/bin:/sbin/nologin</span><br><span class="line">daemon:x:2:2:daemon:/sbin:/sbin/nologin</span><br><span class="line">adm:x:3:4:adm:/var/adm:/sbin/nologin</span><br><span class="line">lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin</span><br><span class="line">sync:x:5:0:sync:/sbin:/bin/sync</span><br><span class="line">shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown</span><br><span class="line">halt:x:7:0:halt:/sbin:/sbin/halt</span><br><span class="line">mail:x:8:12:mail:/var/spool/mail:/sbin/nologin</span><br><span class="line">operator:x:11:0:operator:/root:/sbin/nologin</span><br><span class="line">games:x:12:100:games:/usr/games:/sbin/nologin</span><br><span class="line">ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin</span><br><span class="line">nobody:x:99:99:Nobody:/:/sbin/nologin</span><br></pre></td></tr></table></figure>
+<h4 id="END-关键字使用方法"><a href="#END-关键字使用方法" class="headerlink" title="END 关键字使用方法"></a>END 关键字使用方法</h4><p>awk 的 END 指令和 BEGIN 恰好相反，在 awk 读取并且处理完文件的所有内容行之后，才会执行 END 后面的脚本代码段<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;END &#123;print &quot;End file&quot;&#125;&apos; /etc/passwd</span><br><span class="line"></span><br><span class="line">End file</span><br></pre></td></tr></table></figure></p>
+<p>一定要多动手在电脑上敲一敲这些命令，对身体好。脑子是个好东西，要多用。。。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;BEGIN &#123;print &quot;Start read file&quot;&#125; &#123;print $0&#125; END &#123;print &quot;End file&quot;&#125;&apos; /etc/passwd</span><br><span class="line"></span><br><span class="line">Start read file</span><br><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">bin:x:1:1:bin:/bin:/sbin/nologin</span><br><span class="line">daemon:x:2:2:daemon:/sbin:/sbin/nologin</span><br><span class="line">adm:x:3:4:adm:/var/adm:/sbin/nologin</span><br><span class="line">lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin</span><br><span class="line">sync:x:5:0:sync:/sbin:/bin/sync</span><br><span class="line">shutdown:x:6:0:shutdown:/sbin:/sbin/shutdown</span><br><span class="line">halt:x:7:0:halt:/sbin:/sbin/halt</span><br><span class="line">mail:x:8:12:mail:/var/spool/mail:/sbin/nologin</span><br><span class="line">operator:x:11:0:operator:/root:/sbin/nologin</span><br><span class="line">games:x:12:100:games:/usr/games:/sbin/nologin</span><br><span class="line">ftp:x:14:50:FTP User:/var/ftp:/sbin/nologin</span><br><span class="line">nobody:x:99:99:Nobody:/:/sbin/nologin</span><br><span class="line">End file</span><br></pre></td></tr></table></figure>
+<h4 id="在-awk-中使用变量"><a href="#在-awk-中使用变量" class="headerlink" title="在 awk 中使用变量"></a>在 awk 中使用变量</h4><p>可以在 awk 脚本中声明和使用变量<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;msg=&quot;hello world&quot;; print msg&#125;&apos; /etc/passwd</span><br><span class="line"></span><br><span class="line">hello world</span><br><span class="line">hello world</span><br><span class="line">hello world</span><br><span class="line">hello world</span><br><span class="line">hello world</span><br></pre></td></tr></table></figure></p>
+<p>awk 声明的变量可以在任何多个花括号脚本中使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;BEGIN &#123;msg=&quot;hello world&quot;&#125; &#123;print msg&#125;&apos; /etc/passwd</span><br><span class="line"></span><br><span class="line">hello world</span><br><span class="line">hello world</span><br><span class="line">hello world</span><br><span class="line">hello world</span><br><span class="line">hello world</span><br></pre></td></tr></table></figure>
+<h4 id="在-awk-中使用数学运算"><a href="#在-awk-中使用数学运算" class="headerlink" title="在 awk 中使用数学运算"></a>在 awk 中使用数学运算</h4><p>在 awk 中，像其他编程语言一样，它也支持一些基本的数学运算操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;a = 12; b = 24; print a + b&#125;&apos; company.txt</span><br><span class="line"></span><br><span class="line">36</span><br><span class="line">36</span><br><span class="line">36</span><br><span class="line">36</span><br></pre></td></tr></table></figure>
+<p>上面这段脚本表示，先声明两个变量 a = 12 和 b = 24，然后用 print 打印出 a 加上 b 的结果。</p>
+<p>看到上面的输出结果，你很可能又是一脸的懵逼，为什么会重复输出 4 次同样的计算结果。所以说小时不学好，长大做IT。 知识这东西真到了要用的时候，能亮瞎别人的双眼，好了，不废话。请记住 awk 是针对文件的每一行来执行一次单引号 里面的脚本代码，每读取到一行就会执行一次，文件里面有多少行就会执行多少次，但 BEGIN 和 END 关键字后面的 脚本代码除外，如果被处理的文件中什么都没有，那 awk 就一次都不会执行。。。</p>
+<p><strong>awk 还支持其他的数学运算符</strong></p>
+<blockquote>
+<p>+加法运算符<br> - 减法运算符<br> * 乘法运算符<br> \/ 除法运算符<br> \% 取余运算符  </p>
+</blockquote>
+<p> 在 awk 中使用条件判断</p>
+<p> 比如有一个文件 company.txt 内容如下<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yahoo   100 4500</span><br><span class="line">google  150 7500</span><br><span class="line">apple   180 8000</span><br><span class="line">twitter 120 5000</span><br></pre></td></tr></table></figure></p>
+<p> 我们要判断文件的第 3 列数据，也就是平均工资小于 5500 的公司，然后将其打印输出</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;$3 &lt; 5500 &#123;print $0&#125;&apos; company.txt</span><br><span class="line"></span><br><span class="line">yahoo   100 4500</span><br><span class="line">twitter 120 5000</span><br></pre></td></tr></table></figure>
+<p> 上面的命令结果就是平均工资小于 5500 的公司名单， $3 &lt; 5500 表示当第 3 列字段的内容小于 5500 的时候才会执行后面的 {print $0} 代码块</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;$1 == &quot;yahoo&quot; &#123;print $0&#125;&apos; company.txt</span><br><span class="line"></span><br><span class="line">yahoo   100 4500</span><br></pre></td></tr></table></figure>
+<p> <strong>awk 还有一些其他的条件操作符如下</strong></p>
+<blockquote>
+<p>\&lt; 小于<br> \&lt;= 小于或等于<br> \== 等于<br> != 不等于<br> > 大于<br> >= 大于或等于<br> ~ 匹配正则表达式<br> !~ 不匹配正则表达式  </p>
+</blockquote>
+<p> 使用 if 指令判断来实现上面同样的效果</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;&#123;if ($3 &lt; 5500) print $0&#125;&apos; company.txt</span><br><span class="line"></span><br><span class="line">yahoo   100 4500</span><br><span class="line">twitter 120 5000</span><br></pre></td></tr></table></figure>
+<p> 上面表示如果第 3 列字段小于 5500 的时候就会执行后面的 print $0，很像 C 语言和 PHP 的语法对不对。</p>
+<h4 id="在-awk-中使用正则表达式"><a href="#在-awk-中使用正则表达式" class="headerlink" title="在 awk 中使用正则表达式"></a>在 awk 中使用正则表达式</h4><p> 在 awk 中支持正则表达式的使用，如果你还对正则表达式不是很了解，请先停下来，上 google 去搜一下。</p>
+<p> 比如现在我们有这么一个文件 poetry.txt 里面都是我写的诗，不要问我为什么那么的有才华。内容如下：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">This above all: to thine self be true</span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br><span class="line">There’s a special providence in the fall of a sparrow</span><br><span class="line">No matter how dark long, may eventually in the day arrival</span><br></pre></td></tr></table></figure></p>
+<p> <strong>使用正则表达式匹配字符串 “There” ，将包含这个字符串的行打印并输出</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/There/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br><span class="line">There’s a special providence in the fall of a sparrow</span><br></pre></td></tr></table></figure>
+<p> <strong>使用正则表达式配一个包含字母 t 和字母 e ，并且 t 和 e 中间只能有任意单个字符的行</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/t.e/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br><span class="line">There’s a special providence in the fall of a sparrow</span><br><span class="line">No matter how dark long, may eventually in the day arrival</span><br></pre></td></tr></table></figure>
+<p> 如果只想匹配单纯的字符串 “t.e”， 那正则表达式就是这样的 /t.e/ ，用反斜杠来转义 . 符号 因为 . 在正则表达式里面表示任意单个字符。</p>
+<p> <strong>使用正则表达式来匹配所有以 “The” 字符串开头的行</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/^The/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br><span class="line">There’s a special providence in the fall of a sparrow</span><br></pre></td></tr></table></figure>
+<p> 在正则表达式中 ^ 表示以某某字符或者字符串开头。</p>
+<p> <strong>使用正则表达式来匹配所有以 “true” 字符串结尾的行</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/true$/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">This above all: to thine self be true</span><br></pre></td></tr></table></figure>
+<p> 在正则表达式中 $ 表示以某某字符或者字符串结尾。</p>
+<p> <strong>又一个正则表达式例子如下</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/m[a]t/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">No matter how dark long, may eventually in the day arrival</span><br></pre></td></tr></table></figure>
+<p> 上面这个正则表达式 /m[a]t/ 表示匹配包含字符 m ，然后接着后面还要包含中间方括号中表示的单个字符 a ，最后还要包含字符 t 的行，输出结果中只有单词 “matter” 符合这个正则表达式的匹配。因为正则表达式 [a] 方括号中表示匹配里面的任意单个字符。</p>
+<p> <strong>继续上面的一个新例子如下</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/^Th[ie]/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">This above all: to thine self be true</span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br><span class="line">There’s a special providence in the fall of a sparrow</span><br></pre></td></tr></table></figure>
+<p> 这个例子中的正则表达式 /^Th[ie]/表示匹配以字符串 “Thi” 或者 “The” 开头的行，正则表达式方括号中表示匹配其中的任意单个字符。</p>
+<p> <strong>再继续上面的新的用法</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/s[a-z]/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">This above all: to thine self be true</span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br><span class="line">There’s a special providence in the fall of a sparrow</span><br></pre></td></tr></table></figure>
+<p> 正则表达式 /s[a-z]/ 表示匹配包含字符 s 然后后面跟着任意 a 到 z 之间的单个字符的字符串，比如 “se”, “so”, “sp” 等等。</p>
+<p> <strong>正则表达式 [] 方括号中还有一些其他用法比如下面这些</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[a-zA-Z]  表示匹配小写的 a 到 z 之间的单个字符，或者大写的 A 到 Z 之间的单个字符</span><br><span class="line">[^a-z]    符号 `^` 在方括号里面表示取反，也就是非的意思，表示匹配任何非 a 到 z 之间的单个字符</span><br></pre></td></tr></table></figure>
+<p> 正则表达式中的星号 * 和加号 + 的使用方法</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/go*d/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br></pre></td></tr></table></figure>
+<p> 上面这个表示匹配包含字符串 “god”，并且中间的字母 “o” 可以出现 0 次或者多次，比如单词 “good” 就符合这个要求。 正则表达式中的 + 和星号原理差不多，只是加号表示任意 1 个或者 1 个以上，也就是必须至少要出现一次。</p>
+<p> <strong>正则表达式问号 ? 的使用方法</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/ba?d/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br></pre></td></tr></table></figure>
+<p> 正则表达式中的问号 ? 表示它前面的字符只能出现 0 次 或者 1 次，也就是可以不出现，也可以出现，但如果有出现也只能出现 1 次。</p>
+<p> <strong>正则表达式中的 {} 花括号用法</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/go&#123;2&#125;d/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br></pre></td></tr></table></figure>
+<p> 花括号 {} 表示规定它前面的字符必须出现的次数，像上面这个 /go{2}d/ 就表示只匹配字符串 “good”，也就是中间的字母 “o” 必须要出现 2 次。</p>
+<p> 正则表达式中的花括号还有一些其他的用法如下<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/go&#123;2,3&#125;d/    表示字母 &quot;o&quot; 只能可以出现 2 次或者 3 次</span><br><span class="line">/go&#123;2,10&#125;d/   表示字母 &quot;o&quot; 只能可以出现 2次，3次，4次，5次，6次 ... 一直到 10 次</span><br><span class="line">/go&#123;2,&#125;d/     表示字母 &quot;o&quot; 必须至少出现 2 次或着 2 次以上</span><br></pre></td></tr></table></figure></p>
+<p> <strong>正则表达式中的圆括号的用法</strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk &apos;/th(in)&#123;1&#125;king/&#123;print $0&#125;&apos; poetry.txt</span><br><span class="line"></span><br><span class="line">There is nothing either good or bad, but thinking makes it so</span><br></pre></td></tr></table></figure>
+<p> 正则表达式中的圆括号表示将多个字符当成一个完整的对象来看待。比如 /th(in){1}king/ 就表示其中字符串 “in” 必须出现 1 次。而如果不加圆括号就变成了 /thin{1}king/ 这个就表示其中字符 “n” 必须出现 1 次。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p> 因为 awk 算起来也是一种编程语言，它的功能远远不止我们上面讲的这些，awk 还有一些其他比较复杂的功能。但一般我们不建议将 awk 用的太过于复杂。通常面对一些比较复杂的场景我们还是要使用其他的一些工具，比如 shell 脚本，Lua 等等。。。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <div>
+        
+            <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+        
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag"># Linux</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/05/php-kafka/" rel="next" title="PHP下kafka的实践">
+                <i class="fa fa-chevron-left"></i> PHP下kafka的实践
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Sean</p>
+              <p class="site-description motion-element" itemprop="description">Now I have come to the crossroads in my life. I always knew what the right path was. Without exception, I knew, but I never took it.You know why ? lt was too hard.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">41</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#概念"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#awk-命令的基本格式"><span class="nav-number">1.1.</span> <span class="nav-text">awk 命令的基本格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#awk-自定义分隔符"><span class="nav-number">1.2.</span> <span class="nav-text">awk 自定义分隔符</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何在-awk-中同时指定多个分隔符"><span class="nav-number">1.3.</span> <span class="nav-text">如何在 awk 中同时指定多个分隔符</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#awk-内置变量的使用"><span class="nav-number">1.4.</span> <span class="nav-text">awk 内置变量的使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BEGIN-关键字的使用"><span class="nav-number">1.5.</span> <span class="nav-text">BEGIN 关键字的使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#END-关键字使用方法"><span class="nav-number">1.6.</span> <span class="nav-text">END 关键字使用方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在-awk-中使用变量"><span class="nav-number">1.7.</span> <span class="nav-text">在 awk 中使用变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在-awk-中使用数学运算"><span class="nav-number">1.8.</span> <span class="nav-text">在 awk 中使用数学运算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在-awk-中使用正则表达式"><span class="nav-number">1.9.</span> <span class="nav-text">在 awk 中使用正则表达式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">1.10.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Sean</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
